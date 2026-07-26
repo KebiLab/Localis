@@ -1,0 +1,16 @@
+# Local reference source used during the Localis migration.
+# Never commit this directory to the Localis repository.
+KodikDevKit-main/
+
+# Dependencies and build output
+node_modules/
+dist/
+.next/
+out/
+.localis-web.*.log
+*.tsbuildinfo
+
+# Local environment files
+.env
+.env.*
+!.env.example

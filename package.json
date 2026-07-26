@@ -1,0 +1,26 @@
+{
+  "name": "localis-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Localis — a private, local-first AI workspace for developers.",
+  "license": "Apache-2.0",
+  "author": "KebiLab",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @localis/core && npm run build -w @localis/cli && npm run build -w @localis/web",
+    "build:core": "npm run build -w @localis/core",
+    "build:cli": "npm run build -w @localis/cli",
+    "build:web": "npm run build -w @localis/web",
+    "dev:web": "npm run dev -w @localis/web",
+    "test": "npm run test -w @localis/core && npm run test -w @localis/cli",
+    "typecheck": "npm run typecheck -w @localis/core && npm run build -w @localis/core && npm run typecheck -w @localis/cli && npm run typecheck -w @localis/web",
+    "localis": "node apps/cli/dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}
