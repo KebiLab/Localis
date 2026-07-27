@@ -1,11 +1,17 @@
 import {
+  applyChangePlan,
+  ChangePlanError,
   generateWithOllama,
+  listChangeSessions,
   listOllamaModels,
   OllamaError,
   prepareProjectContext,
+  previewChangePlan,
   runAudit,
   runDoctor,
+  undoChangeSession,
 } from "@localis/core";
+import { promises as fs } from "node:fs";
 
 import {
   optionValue,
@@ -16,9 +22,12 @@ import {
 import {
   formatAnswer,
   formatAudit,
+  formatChangeHistory,
+  formatChangePreview,
   formatDoctor,
   formatModels,
   formatPrivacyPreview,
+  terminalSafe,
 } from "./format.js";
 import { usage, VERSION } from "./usage.js";
 
@@ -175,6 +184,76 @@ export async function runCli(args: string[]): Promise<CliResult> {
     }
   }
 
+  if (command === "apply") {
+    const planPath = positional[1];
+    const root = positional[2] ?? ".";
+    if (!planPath) {
+      return { exitCode: 1, stderr: "The apply command requires a plan JSON file." };
+    }
+    try {
+      const plan = await readPlanFile(planPath);
+      if (!parsed.flags.has("--yes")) {
+        const preview = await previewChangePlan(root, plan);
+        return {
+          exitCode: 0,
+          stdout: json
+            ? JSON.stringify({ mode: "preview", preview }, null, 2)
+            : `${formatChangePreview(preview)}${terminalSafe("Preview only. Review the diff, then rerun with --yes to apply.\n")}`,
+        };
+      }
+      const result = await applyChangePlan(root, plan, { confirmed: true });
+      return {
+        exitCode: 0,
+        stdout: json
+          ? JSON.stringify({ mode: "applied", ...result }, null, 2)
+          : `${formatChangePreview(result.preview)}${
+              result.sessionId
+                ? `Applied ${result.appliedFiles.length} files. Undo session: ${terminalSafe(result.sessionId)}\n`
+                : "No files changed.\n"
+            }`,
+      };
+    } catch (error) {
+      return commandError("APPLY_FAILED", error, json);
+    }
+  }
+
+  if (command === "history") {
+    const root = positional[1] ?? ".";
+    try {
+      const sessions = await listChangeSessions(root);
+      return {
+        exitCode: 0,
+        stdout: json
+          ? JSON.stringify({ sessions }, null, 2)
+          : formatChangeHistory(sessions),
+      };
+    } catch (error) {
+      return commandError("HISTORY_FAILED", error, json);
+    }
+  }
+
+  if (command === "undo") {
+    const session = positional[1] ?? "latest";
+    const root = positional[2] ?? ".";
+    if (!parsed.flags.has("--yes")) {
+      return {
+        exitCode: 1,
+        stderr: "Undo changes files and requires explicit confirmation with --yes.",
+      };
+    }
+    try {
+      const result = await undoChangeSession(root, session, { confirmed: true });
+      return {
+        exitCode: 0,
+        stdout: json
+          ? JSON.stringify(result, null, 2)
+          : `Restored ${result.restoredFiles.length} files from ${terminalSafe(result.sessionId)}.\n`,
+      };
+    } catch (error) {
+      return commandError("UNDO_FAILED", error, json);
+    }
+  }
+
   if (command === "audit") {
     const root = positional[1] ?? ".";
     try {
@@ -211,11 +290,32 @@ function parseMaxFiles(raw: string | undefined): number | undefined {
 
 function commandError(code: string, error: unknown, json: boolean): CliResult {
   const message = error instanceof Error ? error.message : String(error);
-  const detail = error instanceof OllamaError ? { providerCode: error.code } : {};
+  const detail =
+    error instanceof OllamaError
+      ? { providerCode: error.code }
+      : error instanceof ChangePlanError
+        ? { changeCode: error.code }
+        : {};
   return {
     exitCode: 1,
     stderr: json
       ? JSON.stringify({ error: code, message, ...detail })
-      : `Localis ${code.toLowerCase().replaceAll("_", " ")}: ${message}`,
+      : `Localis ${code.toLowerCase().replaceAll("_", " ")}: ${terminalSafe(message)}`,
   };
+}
+
+async function readPlanFile(planPath: string): Promise<unknown> {
+  const stat = await fs.stat(planPath);
+  if (!stat.isFile() || stat.size > 12 * 1024 * 1024) {
+    throw new ChangePlanError(
+      "Change plan must be a JSON file smaller than 12 MiB.",
+      "INVALID_PLAN",
+    );
+  }
+  const source = await fs.readFile(planPath, "utf8");
+  try {
+    return JSON.parse(source) as unknown;
+  } catch {
+    throw new ChangePlanError("Change plan is not valid JSON.", "INVALID_PLAN");
+  }
 }

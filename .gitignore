@@ -9,6 +9,7 @@ dist/
 out/
 .localis-web.*.log
 *.tsbuildinfo
+.localis/
 
 # Local environment files
 .env

@@ -1,6 +1,8 @@
 import type {
   AuditFinding,
   AuditReport,
+  ChangePreview,
+  ChangeSessionManifest,
   ContextPreview,
   DoctorReport,
   FindingSeverity,
@@ -24,7 +26,15 @@ function useColor(): boolean {
 }
 
 function paint(value: string, color: keyof typeof ANSI): string {
-  return useColor() ? `${ANSI[color]}${value}${ANSI.reset}` : value;
+  const safeValue = terminalSafe(value);
+  return useColor() ? `${ANSI[color]}${safeValue}${ANSI.reset}` : safeValue;
+}
+
+export function terminalSafe(value: string): string {
+  return String(value)
+    .replace(/\u001B\][^\u0007]*(?:\u0007|\u001B\\)/g, "")
+    .replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, "");
 }
 
 function severityLabel(severity: FindingSeverity): string {
@@ -40,8 +50,8 @@ function severityLabel(severity: FindingSeverity): string {
 function formatFinding(finding: AuditFinding): string {
   return [
     `  ${severityLabel(finding.severity)} ${paint(finding.title, "bold")}`,
-    `           ${finding.file}:${finding.line}:${finding.column} · ${finding.ruleId}`,
-    `           ${finding.description}`,
+    `           ${terminalSafe(finding.file)}:${finding.line}:${finding.column} · ${finding.ruleId}`,
+    `           ${terminalSafe(finding.description)}`,
     `           ${paint(`Fix: ${finding.remediation}`, "dim")}`,
   ].join("\n");
 }
@@ -61,7 +71,7 @@ export function formatAudit(report: AuditReport): string {
     "",
     heading,
     paint("─".repeat(64), "dim"),
-    `Project     ${report.root}`,
+    `Project     ${terminalSafe(report.root)}`,
     `Scanned     ${report.scannedFiles} files in ${report.durationMs} ms`,
     `Languages   ${languageLine}`,
     `Score       ${paint(String(report.scores.overall), "bold")}/100`,
@@ -136,7 +146,7 @@ export function formatPrivacyPreview(preview: ContextPreview): string {
     "",
     `${paint("LOCALIS", "violet")}  ${paint("PRIVACY GATEWAY", "dim")}`,
     paint("─".repeat(64), "dim"),
-    `Project     ${preview.root}`,
+    `Project     ${terminalSafe(preview.root)}`,
     `Context     ${preview.files.length} files · ${formatBytes(preview.outputBytes)}`,
     `Redactions  ${totalRedactions} total · ${preview.redactions.SECRET} secrets · ${preview.redactions.TOKEN} tokens · ${preview.redactions.PII} PII`,
     `Payload     sha256:${preview.payloadSha256.slice(0, 16)}…`,
@@ -152,7 +162,7 @@ export function formatPrivacyPreview(preview: ContextPreview): string {
         ? paint(`${file.redactions} redacted`, "yellow")
         : paint("clean", "green");
       output.push(
-        `  ${file.path}  ${paint(formatBytes(file.outputBytes), "dim")}  ${redactionLabel}${file.truncated ? `  ${paint("truncated", "yellow")}` : ""}`,
+        `  ${terminalSafe(file.path)}  ${paint(formatBytes(file.outputBytes), "dim")}  ${redactionLabel}${file.truncated ? `  ${paint("truncated", "yellow")}` : ""}`,
       );
     }
   }
@@ -204,7 +214,7 @@ export function formatAnswer(
     "",
     `${paint("LOCALIS", "violet")}  ${paint(result.model.toUpperCase(), "dim")}`,
     paint("─".repeat(64), "dim"),
-    result.response.trim(),
+    terminalSafe(result.response.trim()),
     "",
     paint("─".repeat(64), "dim"),
     paint(
@@ -213,4 +223,58 @@ export function formatAnswer(
     ),
     "",
   ].join("\n");
+}
+
+function colorizeDiff(diff: string): string {
+  return diff
+    .split("\n")
+    .map((line) => {
+      if (line.startsWith("+++") || line.startsWith("---")) return paint(line, "dim");
+      if (line.startsWith("+")) return paint(line, "green");
+      if (line.startsWith("-")) return paint(line, "red");
+      if (line.startsWith("@@")) return paint(line, "violet");
+      return terminalSafe(line);
+    })
+    .join("\n");
+}
+
+export function formatChangePreview(preview: ChangePreview): string {
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint("CHANGE PREVIEW", "dim")}`,
+    paint("─".repeat(64), "dim"),
+    `Plan        ${terminalSafe(preview.planId)}`,
+    `Project     ${terminalSafe(preview.root)}`,
+    `Changes     ${preview.changedFiles} of ${preview.files.length} files`,
+  ];
+
+  for (const file of preview.files) {
+    output.push(
+      "",
+      `${paint(file.status.toUpperCase().padEnd(9), file.status === "unchanged" ? "gray" : "yellow")} ${terminalSafe(file.path)}`,
+    );
+    if (file.diff) output.push(colorizeDiff(file.diff));
+  }
+  output.push("");
+  return output.join("\n");
+}
+
+export function formatChangeHistory(sessions: ChangeSessionManifest[]): string {
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint("CHANGE HISTORY", "dim")}`,
+    paint("─".repeat(64), "dim"),
+  ];
+  if (sessions.length === 0) {
+    output.push("No Localis change sessions were found.");
+  } else {
+    for (const session of sessions) {
+      const stateColor = session.state === "applied" ? "green" : "gray";
+      output.push(
+        `${paint(session.state.toUpperCase().padEnd(11), stateColor)}  ${terminalSafe(session.id)}  ${session.entries.length} files  ${terminalSafe(session.planId)}`,
+      );
+    }
+  }
+  output.push("");
+  return output.join("\n");
 }

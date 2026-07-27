@@ -1,6 +1,25 @@
 export { runAudit } from "./audit.js";
 export { runDoctor } from "./doctor.js";
 export {
+  applyChangePlan,
+  ChangePlanError,
+  createChangePlan,
+  listChangeSessions,
+  parseChangePlan,
+  previewChangePlan,
+  sha256,
+  undoChangeSession,
+  type ApplyChangeResult,
+  type ChangeFilePreview,
+  type ChangePlan,
+  type ChangePlanFile,
+  type ChangePreview,
+  type ChangeSessionEntry,
+  type ChangeSessionManifest,
+  type UndoChangeResult,
+} from "./changes.js";
+export { unifiedDiff, type UnifiedDiffResult } from "./diff.js";
+export {
   prepareProjectContext,
   type ContextFilePreview,
   type ContextPreview,

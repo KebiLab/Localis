@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { optionValue, optionValues, parseArguments } from "./args.js";
+import { terminalSafe } from "./format.js";
 
 test("argument parser preserves repeated context files", () => {
   const parsed = parseArguments([
@@ -23,4 +24,11 @@ test("argument parser preserves repeated context files", () => {
 
 test("argument parser rejects missing option values", () => {
   assert.throws(() => parseArguments(["privacy", "--file"]), /requires a value/);
+});
+
+test("terminal output removes control and ANSI escape sequences", () => {
+  assert.equal(
+    terminalSafe("safe\u001B[31m red\u001B[0m\u0007 text"),
+    "safe red text",
+  );
 });

@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { createChangePlan } from "@localis/core";
 
 import { runCli } from "./run.js";
 
@@ -84,4 +85,61 @@ test("context file limits reject unsafe values", async () => {
 
   assert.equal(result.exitCode, 1);
   assert.match(result.stderr ?? "", /between 1 and 200/);
+});
+
+test("apply previews by default, writes with confirmation, and supports undo", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-apply-"));
+
+  try {
+    const target = path.join(root, "index.ts");
+    const planPath = path.join(root, "change-plan.json");
+    await fs.writeFile(target, "export const version = 1;\n");
+    const plan = await createChangePlan(
+      root,
+      [{ path: "index.ts", after: "export const version = 2;\n" }],
+      "cli-apply-test",
+    );
+    await fs.writeFile(planPath, JSON.stringify(plan));
+
+    const preview = await runCli(["apply", planPath, root, "--json"]);
+    assert.equal(preview.exitCode, 0);
+    assert.equal(JSON.parse(preview.stdout ?? "{}").mode, "preview");
+    assert.equal(await fs.readFile(target, "utf8"), "export const version = 1;\n");
+
+    const applied = await runCli(["apply", planPath, root, "--yes", "--json"]);
+    const appliedOutput = JSON.parse(applied.stdout ?? "{}") as {
+      sessionId?: string;
+    };
+    assert.equal(applied.exitCode, 0);
+    assert.ok(appliedOutput.sessionId);
+    assert.equal(await fs.readFile(target, "utf8"), "export const version = 2;\n");
+
+    const history = await runCli(["history", root, "--json"]);
+    assert.equal(JSON.parse(history.stdout ?? "{}").sessions.length, 1);
+
+    const refusedUndo = await runCli(["undo", "latest", root]);
+    assert.equal(refusedUndo.exitCode, 1);
+    assert.match(refusedUndo.stderr ?? "", /requires explicit confirmation/);
+
+    const undone = await runCli(["undo", "latest", root, "--yes", "--json"]);
+    assert.equal(undone.exitCode, 0);
+    assert.equal(await fs.readFile(target, "utf8"), "export const version = 1;\n");
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("apply reports invalid plan JSON without touching the project", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-plan-"));
+
+  try {
+    const planPath = path.join(root, "broken.json");
+    await fs.writeFile(planPath, "{not-json");
+    const result = await runCli(["apply", planPath, root, "--yes", "--json"]);
+
+    assert.equal(result.exitCode, 1);
+    assert.equal(JSON.parse(result.stderr ?? "{}").changeCode, "INVALID_PLAN");
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
 });

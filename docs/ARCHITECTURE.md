@@ -22,6 +22,8 @@ The core now exposes two separate AI contracts:
 - `prepareProjectContext()` performs bounded selection, redaction, manifest creation, and payload hashing without network access;
 - `generateWithOllama()` accepts only loopback HTTP endpoints and sends a non-streaming request to the local Ollama API.
 
+The change engine accepts typed JSON plans rather than free-form model output. It validates paths and size limits, checks the expected SHA-256 of every source file, previews a bounded unified diff, and requires explicit confirmation before writing. Applied transactions are recorded under `.localis/backups`; undo verifies both current-file and backup hashes before restoring anything.
+
 ### `@localis/cli`
 
 Turns core results into human-readable or JSON output. Exit codes are stable automation contracts:
@@ -29,6 +31,8 @@ Turns core results into human-readable or JSON output. Exit codes are stable aut
 - `0` — command completed and no critical finding was detected;
 - `1` — command failed or usage is invalid;
 - `2` — audit completed with at least one critical finding.
+
+Human-readable output strips terminal control sequences from repository paths, provider errors, model responses, and diff content before rendering.
 
 ### `@localis/web`
 

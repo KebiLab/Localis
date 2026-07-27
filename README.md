@@ -33,6 +33,8 @@ The first development milestone includes:
 - `localis privacy [path]` — exact outbound manifest, redaction counts, and payload hash;
 - `localis models` — locally installed Ollama model discovery;
 - `localis ask <question> [path]` — project-aware answers through local Ollama;
+- `localis apply <plan.json> [path]` — hash-checked diff preview and confirmed transaction;
+- `localis history` / `localis undo` — local backup history and conflict-safe restoration;
 - `--json` output for automation and future desktop integration;
 - a reusable `@localis/core` package;
 - the first Vercel-ready product website.
@@ -67,6 +69,17 @@ node apps/cli/dist/index.js ask "Explain the authentication flow" . \
 
 Use `ask --dry-run` to inspect the manifest and payload hash without contacting Ollama. Localis only permits Ollama endpoints on `localhost`, `127.0.0.1`, or `::1`.
 
+Preview and apply a validated change plan:
+
+```bash
+node apps/cli/dist/index.js apply ./localis-plan.json .
+node apps/cli/dist/index.js apply ./localis-plan.json . --yes
+node apps/cli/dist/index.js history .
+node apps/cli/dist/index.js undo latest . --yes
+```
+
+`apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
+
 ## Workspace
 
 ```text
@@ -86,8 +99,9 @@ docs/
 - [x] Environment doctor and JSON reports
 - [x] Privacy Gateway preview for outbound AI context
 - [x] Loopback-only Ollama model adapter
+- [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
 - [ ] LM Studio model adapter
-- [ ] Safe fix plan → diff → approve → apply → undo
+- [ ] AI generation of typed change plans from audit findings
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
 - [ ] Test intelligence and release readiness checks
 - [ ] VS Code, JetBrains, and CI integrations

@@ -16,7 +16,7 @@ const capabilities = [
   {
     label: "Change",
     title: "Review the diff before the fix.",
-    body: "AI changes are designed as a reversible flow: plan, preview, approve, apply, verify, undo.",
+    body: "Typed plans are hash-checked before a diff appears. Apply requires confirmation, creates a local backup, and supports conflict-safe undo.",
   },
   {
     label: "Ship",

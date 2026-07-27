@@ -12,3 +12,5 @@ Chosen stack:
 The first usable screen will open a repository, run a deterministic audit, filter findings, and display the local/cloud Privacy Boundary before any AI action.
 
 The required core contracts now exist: audits, bounded context preparation, redaction manifests, payload hashes, and loopback-only Ollama generation. The desktop shell can consume these contracts without inventing a second privacy model.
+
+The change transaction contract is also ready: the GUI can render `ChangePreview`, require a deliberate approval action, call `applyChangePlan`, show backup history, and expose conflict-safe undo.
