@@ -1,6 +1,23 @@
 export { runAudit } from "./audit.js";
 export { runDoctor } from "./doctor.js";
 export {
+  prepareProjectContext,
+  type ContextFilePreview,
+  type ContextPreview,
+  type ContextRedactionSummary,
+  type PreparedContext,
+  type PrepareContextOptions,
+} from "./context.js";
+export {
+  generateWithOllama,
+  listOllamaModels,
+  OllamaError,
+  type FetchImplementation,
+  type OllamaGenerateOptions,
+  type OllamaGenerateResult,
+  type OllamaModel,
+} from "./ollama.js";
+export {
   redactSensitiveText,
   restoreRedactedText,
   type RedactionFinding,

@@ -17,6 +17,11 @@ CI integration ────┘       │
 
 Owns project discovery, safe file reads, deterministic audit rules, redaction, scoring, and environment diagnostics. It must not make an external network request unless the caller invokes a capability whose name and contract clearly describe that request.
 
+The core now exposes two separate AI contracts:
+
+- `prepareProjectContext()` performs bounded selection, redaction, manifest creation, and payload hashing without network access;
+- `generateWithOllama()` accepts only loopback HTTP endpoints and sends a non-streaming request to the local Ollama API.
+
 ### `@localis/cli`
 
 Turns core results into human-readable or JSON output. Exit codes are stable automation contracts:
@@ -42,3 +47,5 @@ Local scanning and redaction are always available offline. A model provider is a
 3. show the exact outbound payload;
 4. require explicit approval;
 5. record a local, secret-free audit event.
+
+The first four steps are implemented for the CLI context workflow. Local audit-event persistence remains planned.

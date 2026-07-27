@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/audit.test.js dist/privacy.test.js",
+    "test": "npm run build && node --test dist/audit.test.js dist/context.test.js dist/ollama.test.js dist/privacy.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

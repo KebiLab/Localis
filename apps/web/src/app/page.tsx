@@ -11,7 +11,7 @@ const capabilities = [
   {
     label: "Privacy",
     title: "See what crosses the boundary.",
-    body: "Localis will preview and redact outbound context before an optional cloud model receives anything.",
+    body: "Localis previews and redacts model context, then gives the exact payload a stable SHA-256 identity before any request.",
   },
   {
     label: "Change",

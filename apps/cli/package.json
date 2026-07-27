@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/run.test.js",
+    "test": "npm run build && node --test dist/args.test.js dist/run.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

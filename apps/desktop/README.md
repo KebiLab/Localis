@@ -10,3 +10,5 @@ Chosen stack:
 - no background telemetry by default.
 
 The first usable screen will open a repository, run a deterministic audit, filter findings, and display the local/cloud Privacy Boundary before any AI action.
+
+The required core contracts now exist: audits, bounded context preparation, redaction manifests, payload hashes, and loopback-only Ollama generation. The desktop shell can consume these contracts without inventing a second privacy model.

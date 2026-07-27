@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const COMMAND = "npx @localis/cli doctor";
+const COMMAND = "git clone https://github.com/KebiLab/Localis.git";
 
 export function CopyCommand() {
   const [copied, setCopied] = useState(false);

@@ -30,11 +30,14 @@ The first development milestone includes:
 
 - `localis audit [path]` — deterministic project and security scan;
 - `localis doctor` — environment readiness checks for Node.js, Git, and Ollama;
+- `localis privacy [path]` — exact outbound manifest, redaction counts, and payload hash;
+- `localis models` — locally installed Ollama model discovery;
+- `localis ask <question> [path]` — project-aware answers through local Ollama;
 - `--json` output for automation and future desktop integration;
 - a reusable `@localis/core` package;
 - the first Vercel-ready product website.
 
-The AI fix engine and desktop application are on the roadmap and are not presented as finished features yet.
+The safe AI fix engine and desktop application are on the roadmap and are not presented as finished features yet.
 
 ## Quick start
 
@@ -45,6 +48,7 @@ npm install
 npm run build
 node apps/cli/dist/index.js doctor
 node apps/cli/dist/index.js audit .
+node apps/cli/dist/index.js privacy . --file src --file package.json
 ```
 
 For machine-readable output:
@@ -52,6 +56,16 @@ For machine-readable output:
 ```bash
 node apps/cli/dist/index.js audit . --json
 ```
+
+Ask an installed Ollama model about redacted project context:
+
+```bash
+node apps/cli/dist/index.js models
+node apps/cli/dist/index.js ask "Explain the authentication flow" . \
+  --file src --model qwen2.5-coder:7b
+```
+
+Use `ask --dry-run` to inspect the manifest and payload hash without contacting Ollama. Localis only permits Ollama endpoints on `localhost`, `127.0.0.1`, or `::1`.
 
 ## Workspace
 
@@ -70,8 +84,9 @@ docs/
 
 - [x] Local-first scanner and deterministic audit
 - [x] Environment doctor and JSON reports
-- [ ] Privacy Gateway preview for outbound AI context
-- [ ] Ollama and LM Studio model adapters
+- [x] Privacy Gateway preview for outbound AI context
+- [x] Loopback-only Ollama model adapter
+- [ ] LM Studio model adapter
 - [ ] Safe fix plan → diff → approve → apply → undo
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
 - [ ] Test intelligence and release readiness checks

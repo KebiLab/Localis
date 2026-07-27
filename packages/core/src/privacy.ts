@@ -1,12 +1,26 @@
 interface RedactionRule {
   kind: "SECRET" | "TOKEN" | "PII";
   pattern: RegExp;
+  valueGroup?: number;
 }
 
 const REDACTION_RULES: RedactionRule[] = [
   {
+    kind: "SECRET",
+    pattern:
+      /-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----/g,
+  },
+  {
     kind: "TOKEN",
     pattern: /\b(?:gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,})\b/g,
+  },
+  {
+    kind: "TOKEN",
+    pattern: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/g,
+  },
+  {
+    kind: "TOKEN",
+    pattern: /\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g,
   },
   {
     kind: "SECRET",
@@ -14,7 +28,17 @@ const REDACTION_RULES: RedactionRule[] = [
   },
   {
     kind: "SECRET",
-    pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/g,
+    pattern: /\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{20,}\b/g,
+  },
+  {
+    kind: "SECRET",
+    pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g,
+  },
+  {
+    kind: "SECRET",
+    pattern:
+      /((?:postgres|postgresql|mysql|mongodb(?:\+srv)?|redis|amqp):\/\/[^\s:@/]+:)([^\s@/]+)(@)/gi,
+    valueGroup: 2,
   },
   {
     kind: "PII",
@@ -24,6 +48,7 @@ const REDACTION_RULES: RedactionRule[] = [
     kind: "SECRET",
     pattern:
       /((?:api[_-]?key|client[_-]?secret|auth[_-]?token|password)\s*[:=]\s*["'`])([^"'`\s]{8,})(["'`])/gi,
+    valueGroup: 2,
   },
 ];
 
@@ -53,8 +78,13 @@ export function redactSensitiveText(input: string): RedactionResult {
     const pattern = new RegExp(rule.pattern.source, rule.pattern.flags);
     text = text.replace(pattern, (...args: unknown[]) => {
       const fullMatch = String(args[0]);
-      const isAssignment = args.length > 4 && typeof args[2] === "string";
-      const sensitiveValue = isAssignment ? String(args[2]) : fullMatch;
+      const sensitiveValue = rule.valueGroup
+        ? String(args[rule.valueGroup] ?? "")
+        : fullMatch;
+
+      if (/^<?LOCALIS_(?:SECRET|TOKEN|PII)_\d+>?/.test(sensitiveValue)) {
+        return fullMatch;
+      }
 
       let placeholder = seen.get(sensitiveValue);
       if (!placeholder) {
@@ -65,8 +95,12 @@ export function redactSensitiveText(input: string): RedactionResult {
         findings.push({ kind: rule.kind, placeholder });
       }
 
-      if (isAssignment) {
-        return `${String(args[1])}${placeholder}${String(args[3])}`;
+      if (rule.valueGroup) {
+        const valueOffset = fullMatch.indexOf(sensitiveValue);
+        if (valueOffset === -1) return fullMatch;
+        return `${fullMatch.slice(0, valueOffset)}${placeholder}${fullMatch.slice(
+          valueOffset + sensitiveValue.length,
+        )}`;
       }
       return placeholder;
     });

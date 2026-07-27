@@ -1,8 +1,11 @@
 import type {
   AuditFinding,
   AuditReport,
+  ContextPreview,
   DoctorReport,
   FindingSeverity,
+  OllamaGenerateResult,
+  OllamaModel,
 } from "@localis/core";
 
 const ANSI = {
@@ -116,4 +119,98 @@ export function formatDoctor(report: DoctorReport): string {
     "",
   );
   return output.join("\n");
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1_024) return `${bytes} B`;
+  if (bytes < 1_024 * 1_024) return `${(bytes / 1_024).toFixed(1)} KiB`;
+  return `${(bytes / (1_024 * 1_024)).toFixed(1)} MiB`;
+}
+
+export function formatPrivacyPreview(preview: ContextPreview): string {
+  const totalRedactions = Object.values(preview.redactions).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint("PRIVACY GATEWAY", "dim")}`,
+    paint("─".repeat(64), "dim"),
+    `Project     ${preview.root}`,
+    `Context     ${preview.files.length} files · ${formatBytes(preview.outputBytes)}`,
+    `Redactions  ${totalRedactions} total · ${preview.redactions.SECRET} secrets · ${preview.redactions.TOKEN} tokens · ${preview.redactions.PII} PII`,
+    `Payload     sha256:${preview.payloadSha256.slice(0, 16)}…`,
+    "",
+    paint("Outbound manifest", "bold"),
+  ];
+
+  if (preview.files.length === 0) {
+    output.push("  No readable project files selected.");
+  } else {
+    for (const file of preview.files) {
+      const redactionLabel = file.redactions
+        ? paint(`${file.redactions} redacted`, "yellow")
+        : paint("clean", "green");
+      output.push(
+        `  ${file.path}  ${paint(formatBytes(file.outputBytes), "dim")}  ${redactionLabel}${file.truncated ? `  ${paint("truncated", "yellow")}` : ""}`,
+      );
+    }
+  }
+
+  if (preview.truncated) {
+    output.push("", paint("Context limits were reached; the payload is partial.", "yellow"));
+  }
+
+  output.push(
+    "",
+    paint(
+      "No network request was made. Use ask to send this redacted context to local Ollama.",
+      "dim",
+    ),
+    "",
+  );
+  return output.join("\n");
+}
+
+export function formatModels(models: OllamaModel[]): string {
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint("LOCAL MODELS", "dim")}`,
+    paint("─".repeat(64), "dim"),
+  ];
+
+  if (models.length === 0) {
+    output.push("No Ollama models are installed. Pull one with: ollama pull qwen2.5-coder:7b");
+  } else {
+    for (const model of models) {
+      output.push(
+        `  ${paint(model.name, "bold")}${model.size ? `  ${paint(formatBytes(model.size), "dim")}` : ""}`,
+      );
+    }
+  }
+  output.push("");
+  return output.join("\n");
+}
+
+export function formatAnswer(
+  result: OllamaGenerateResult,
+  preview: ContextPreview,
+): string {
+  const redactionCount = Object.values(preview.redactions).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+  return [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint(result.model.toUpperCase(), "dim")}`,
+    paint("─".repeat(64), "dim"),
+    result.response.trim(),
+    "",
+    paint("─".repeat(64), "dim"),
+    paint(
+      `${preview.files.length} files · ${redactionCount} redactions · sha256:${preview.payloadSha256.slice(0, 12)}… · ${result.durationMs ?? 0} ms`,
+      "dim",
+    ),
+    "",
+  ].join("\n");
 }
