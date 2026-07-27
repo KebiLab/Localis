@@ -21,8 +21,9 @@ The core now exposes two separate AI contracts:
 
 - `prepareProjectContext()` performs bounded selection, redaction, manifest creation, and payload hashing without network access;
 - `generateWithOllama()` accepts only loopback HTTP endpoints and sends a non-streaming request to the local Ollama API.
+- `proposeChangePlanWithOllama()` requests schema-constrained output at temperature `0`, validates it as untrusted input, and computes source hashes locally.
 
-The change engine accepts typed JSON plans rather than free-form model output. It validates paths and size limits, checks the expected SHA-256 of every source file, previews a bounded unified diff, and requires explicit confirmation before writing. Applied transactions are recorded under `.localis/backups`; undo verifies both current-file and backup hashes before restoring anything.
+The model never receives a file-write capability. The change engine accepts typed JSON plans rather than free-form instructions, validates paths and size limits, checks the expected SHA-256 of every source file, previews a bounded unified diff, and requires explicit confirmation before writing. Applied transactions are recorded under `.localis/backups`; undo verifies both current-file and backup hashes before restoring anything.
 
 ### `@localis/cli`
 

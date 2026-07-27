@@ -68,3 +68,31 @@ test("context observes file and total payload limits", async () => {
     await fs.rm(root, { recursive: true, force: true });
   }
 });
+
+test("redaction restoration is scoped to the originating file", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-redaction-scope-"));
+
+  try {
+    await fs.writeFile(
+      path.join(root, "a.ts"),
+      'const apiKey = "first-private-value";\n', // localis-ignore secret.generic-assignment
+    );
+    await fs.writeFile(
+      path.join(root, "b.ts"),
+      'const password = "second-private-value";\n', // localis-ignore secret.generic-assignment
+    );
+
+    const prepared = await prepareProjectContext({ root });
+
+    assert.equal(
+      prepared.restoreRedactions("a.ts", "<LOCALIS_SECRET_1>"),
+      "first-private-value",
+    );
+    assert.equal(
+      prepared.restoreRedactions("b.ts", "<LOCALIS_SECRET_1>"),
+      "second-private-value",
+    );
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});

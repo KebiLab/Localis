@@ -10,6 +10,8 @@ export interface OllamaGenerateOptions {
   model: string;
   prompt: string;
   system?: string;
+  format?: "json" | Record<string, unknown>;
+  temperature?: number;
   endpoint?: string;
   timeoutMs?: number;
   fetchImplementation?: FetchImplementation;
@@ -131,6 +133,10 @@ export async function generateWithOllama(
         model: options.model,
         prompt: options.prompt,
         ...(options.system ? { system: options.system } : {}),
+        ...(options.format ? { format: options.format } : {}),
+        ...(options.temperature !== undefined
+          ? { options: { temperature: options.temperature } }
+          : {}),
         stream: false,
         think: false,
       }),

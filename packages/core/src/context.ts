@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-import { redactSensitiveText } from "./privacy.js";
+import { redactSensitiveText, restoreRedactedText } from "./privacy.js";
 import { readProjectFile, scanProject } from "./scanner.js";
 
 export interface ContextFilePreview {
@@ -32,6 +32,7 @@ export interface ContextPreview {
 export interface PreparedContext {
   preview: ContextPreview;
   payload: string;
+  restoreRedactions(filePath: string, value: string): string;
 }
 
 export interface PrepareContextOptions {
@@ -113,6 +114,7 @@ export async function prepareProjectContext(
   const files: ContextFilePreview[] = [];
   const payloadParts: string[] = [];
   const redactions: ContextRedactionSummary = { SECRET: 0, TOKEN: 0, PII: 0 };
+  const replacementsByFile = new Map<string, ReadonlyMap<string, string>>();
   let inputBytes = 0;
   let outputBytes = 0;
   let truncated = scan.truncated || candidates.length > maxFiles;
@@ -136,6 +138,7 @@ export async function prepareProjectContext(
       : sourceBuffer;
     const selectedSource = selectedBuffer.toString("utf8");
     const result = redactSensitiveText(selectedSource);
+    replacementsByFile.set(file.relativePath, result.replacements);
     const safeBytes = Buffer.byteLength(result.text, "utf8");
 
     for (const finding of result.findings) {
@@ -165,6 +168,10 @@ export async function prepareProjectContext(
 
   return {
     payload,
+    restoreRedactions(filePath, value) {
+      const replacements = replacementsByFile.get(filePath.replaceAll("\\", "/"));
+      return replacements ? restoreRedactedText(value, replacements) : value;
+    },
     preview: {
       schemaVersion: 1,
       root,

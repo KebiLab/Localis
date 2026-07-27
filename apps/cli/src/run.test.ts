@@ -13,6 +13,7 @@ test("help introduces Localis and its core commands", async () => {
   assert.equal(result.exitCode, 0);
   assert.match(result.stdout ?? "", /Localis 0\.1\.0/);
   assert.match(result.stdout ?? "", /audit \[path\]/);
+  assert.match(result.stdout ?? "", /propose <task>/);
   assert.match(result.stdout ?? "", /Made by KebiLab/);
 });
 
@@ -74,6 +75,31 @@ test("ask dry-run prepares context without requiring Ollama", async () => {
     };
 
     assert.equal(result.exitCode, 0);
+    assert.equal(output.preview?.files?.length, 1);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test("propose dry-run previews context without requiring Ollama", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-propose-dry-"));
+
+  try {
+    await fs.writeFile(path.join(root, "index.ts"), "export const ready = true;\n");
+    const result = await runCli([
+      "propose",
+      "Add a readiness function.",
+      root,
+      "--dry-run",
+      "--json",
+    ]);
+    const output = JSON.parse(result.stdout ?? "{}") as {
+      mode?: string;
+      preview?: { files?: unknown[] };
+    };
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(output.mode, "context-preview");
     assert.equal(output.preview?.files?.length, 1);
   } finally {
     await fs.rm(root, { recursive: true, force: true });

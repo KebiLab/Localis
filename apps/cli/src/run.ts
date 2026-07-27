@@ -1,12 +1,14 @@
 import {
   applyChangePlan,
   ChangePlanError,
+  ChangeProposalError,
   generateWithOllama,
   listChangeSessions,
   listOllamaModels,
   OllamaError,
   prepareProjectContext,
   previewChangePlan,
+  proposeChangePlanWithOllama,
   runAudit,
   runDoctor,
   undoChangeSession,
@@ -184,6 +186,68 @@ export async function runCli(args: string[]): Promise<CliResult> {
     }
   }
 
+  if (command === "propose") {
+    const instruction = positional[1];
+    const root = positional[2] ?? ".";
+    if (!instruction) {
+      return {
+        exitCode: 1,
+        stderr: "The propose command requires a change instruction.",
+      };
+    }
+    try {
+      const include = optionValues(parsed, "--file");
+      const maxFiles = parseMaxFiles(optionValue(parsed, "--max-files"));
+      if (parsed.flags.has("--dry-run")) {
+        const prepared = await prepareProjectContext({ root, include, maxFiles });
+        return {
+          exitCode: 0,
+          stdout: json
+            ? JSON.stringify({ mode: "context-preview", preview: prepared.preview }, null, 2)
+            : formatPrivacyPreview(prepared.preview),
+        };
+      }
+
+      const endpoint =
+        optionValue(parsed, "--endpoint") ?? process.env.LOCALIS_OLLAMA_ENDPOINT;
+      let model = optionValue(parsed, "--model") ?? process.env.LOCALIS_OLLAMA_MODEL;
+      if (!model) {
+        const models = await listOllamaModels({ endpoint });
+        model = models[0]?.name;
+      }
+      if (!model) {
+        throw new OllamaError(
+          "No Ollama model is installed. Run: ollama pull qwen2.5-coder:7b",
+          "INVALID_RESPONSE",
+        );
+      }
+
+      const proposal = await proposeChangePlanWithOllama({
+        root,
+        instruction,
+        model,
+        endpoint,
+        include,
+        maxFiles,
+      });
+      const out = optionValue(parsed, "--out");
+      if (out) await writeNewPlanFile(out, proposal.plan);
+      return {
+        exitCode: 0,
+        stdout: json
+          ? JSON.stringify({ mode: "proposed", savedTo: out, ...proposal }, null, 2)
+          : [
+              formatChangePreview(proposal.preview),
+              out
+                ? `Plan saved to ${terminalSafe(out)}. Review it, then run localis apply.\n`
+                : `Plan JSON:\n${JSON.stringify(proposal.plan, null, 2)}\n`,
+            ].join(""),
+      };
+    } catch (error) {
+      return commandError("PROPOSE_FAILED", error, json);
+    }
+  }
+
   if (command === "apply") {
     const planPath = positional[1];
     const root = positional[2] ?? ".";
@@ -293,6 +357,8 @@ function commandError(code: string, error: unknown, json: boolean): CliResult {
   const detail =
     error instanceof OllamaError
       ? { providerCode: error.code }
+      : error instanceof ChangeProposalError
+        ? { proposalCode: error.code }
       : error instanceof ChangePlanError
         ? { changeCode: error.code }
         : {};
@@ -302,6 +368,24 @@ function commandError(code: string, error: unknown, json: boolean): CliResult {
       ? JSON.stringify({ error: code, message, ...detail })
       : `Localis ${code.toLowerCase().replaceAll("_", " ")}: ${terminalSafe(message)}`,
   };
+}
+
+async function writeNewPlanFile(planPath: string, plan: unknown): Promise<void> {
+  try {
+    await fs.writeFile(planPath, `${JSON.stringify(plan, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+      mode: 0o600,
+    });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new ChangePlanError(
+        `Refusing to overwrite existing plan file: ${planPath}`,
+        "INVALID_PLAN",
+      );
+    }
+    throw error;
+  }
 }
 
 async function readPlanFile(planPath: string): Promise<unknown> {

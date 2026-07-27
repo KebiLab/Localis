@@ -26,12 +26,16 @@ test("Ollama generation uses the non-streaming local API contract", async () => 
     model: "qwen-test",
     prompt: "Inspect this project.",
     system: "Be precise.",
+    format: "json",
+    temperature: 0,
     fetchImplementation: fakeFetch,
   });
 
   assert.equal(requestUrl, "http://127.0.0.1:11434/api/generate");
   assert.equal(requestBody.stream, false);
   assert.equal(requestBody.think, false);
+  assert.equal(requestBody.format, "json");
+  assert.deepEqual(requestBody.options, { temperature: 0 });
   assert.equal(result.response, "The project is ready.");
   assert.equal(result.promptTokens, 42);
 });

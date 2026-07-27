@@ -3,6 +3,7 @@ const VALUE_OPTIONS = new Set([
   "--file",
   "--max-files",
   "--model",
+  "--out",
 ]);
 
 export interface ParsedArguments {

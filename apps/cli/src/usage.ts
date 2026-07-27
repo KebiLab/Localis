@@ -14,6 +14,7 @@ Commands:
   privacy [path]   Preview the exact redacted project context
   models           List locally installed Ollama models
   ask <question>   Ask local Ollama about a redacted project context
+  propose <task>   Generate a validated change plan with local Ollama
   apply <plan>     Preview a change plan; add --yes to apply it
   history [path]   List local change and backup sessions
   undo [session]   Restore an applied session; requires --yes
@@ -23,6 +24,7 @@ Options:
   --json           Print machine-readable JSON
   --file <path>    Include only this file or directory (repeatable)
   --model <name>   Select an installed Ollama model
+  --out <file>     Save a generated change plan without overwriting
   --max-files <n>  Limit context files (default: 24)
   --dry-run        Build context without calling Ollama
   --show-payload   Print redacted payload (privacy command only)
@@ -36,6 +38,7 @@ Examples:
   localis audit ./services/api --json
   localis privacy . --file src --file package.json
   localis ask "Explain the authentication flow" . --model qwen2.5-coder:7b
+  localis propose "Add input validation" . --file src --out localis-plan.json
   localis apply ./localis-plan.json .
   localis apply ./localis-plan.json . --yes
   localis undo latest . --yes

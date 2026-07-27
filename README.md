@@ -33,13 +33,14 @@ The first development milestone includes:
 - `localis privacy [path]` — exact outbound manifest, redaction counts, and payload hash;
 - `localis models` — locally installed Ollama model discovery;
 - `localis ask <question> [path]` — project-aware answers through local Ollama;
+- `localis propose <task> [path]` — schema-constrained local AI change plan generation;
 - `localis apply <plan.json> [path]` — hash-checked diff preview and confirmed transaction;
 - `localis history` / `localis undo` — local backup history and conflict-safe restoration;
 - `--json` output for automation and future desktop integration;
 - a reusable `@localis/core` package;
 - the first Vercel-ready product website.
 
-The safe AI fix engine and desktop application are on the roadmap and are not presented as finished features yet.
+The desktop application and broader test/release intelligence are on the roadmap and are not presented as finished features yet.
 
 ## Quick start
 
@@ -69,16 +70,18 @@ node apps/cli/dist/index.js ask "Explain the authentication flow" . \
 
 Use `ask --dry-run` to inspect the manifest and payload hash without contacting Ollama. Localis only permits Ollama endpoints on `localhost`, `127.0.0.1`, or `::1`.
 
-Preview and apply a validated change plan:
+Generate, preview, and apply a validated change plan:
 
 ```bash
+node apps/cli/dist/index.js propose "Add input validation" . \
+  --file src --model qwen2.5-coder:7b --out localis-plan.json
 node apps/cli/dist/index.js apply ./localis-plan.json .
 node apps/cli/dist/index.js apply ./localis-plan.json . --yes
 node apps/cli/dist/index.js history .
 node apps/cli/dist/index.js undo latest . --yes
 ```
 
-`apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
+`propose` cannot change source files: it turns schema-constrained model output into a hash-checked plan. `apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
 
 ## Workspace
 
@@ -100,8 +103,9 @@ docs/
 - [x] Privacy Gateway preview for outbound AI context
 - [x] Loopback-only Ollama model adapter
 - [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
+- [x] Local Ollama generation of schema-constrained change plans
 - [ ] LM Studio model adapter
-- [ ] AI generation of typed change plans from audit findings
+- [ ] One-click plan generation from individual audit findings
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
 - [ ] Test intelligence and release readiness checks
 - [ ] VS Code, JetBrains, and CI integrations

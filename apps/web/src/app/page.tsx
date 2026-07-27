@@ -16,7 +16,7 @@ const capabilities = [
   {
     label: "Change",
     title: "Review the diff before the fix.",
-    body: "Typed plans are hash-checked before a diff appears. Apply requires confirmation, creates a local backup, and supports conflict-safe undo.",
+    body: "Local AI proposes schema-constrained plans, never direct writes. Every source hash and diff is checked before confirmed apply, backup, or undo.",
   },
   {
     label: "Ship",

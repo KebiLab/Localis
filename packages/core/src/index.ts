@@ -37,6 +37,13 @@ export {
   type OllamaModel,
 } from "./ollama.js";
 export {
+  CHANGE_PROPOSAL_SCHEMA,
+  ChangeProposalError,
+  proposeChangePlanWithOllama,
+  type ProposeChangePlanOptions,
+  type ProposedChangePlan,
+} from "./proposals.js";
+export {
   redactSensitiveText,
   restoreRedactedText,
   type RedactionFinding,
