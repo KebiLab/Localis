@@ -37,7 +37,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
   grid-template-columns: 188px minmax(150px, 210px) minmax(330px, 1fr) auto auto;
   align-items: center;
   gap: 16px;
-  padding: 0 26px;
+  padding: 0 26px 0 calc(30px + 7vw);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
@@ -240,7 +240,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .preview-head { display: flex; gap: 6px; }
 .preview-head i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
 .preview-score { width: 170px; height: 170px; display: grid; place-content: center; margin: 38px auto 30px; border: 10px solid var(--primary-soft); border-radius: 50%; text-align: center; }
-.preview-score span { color: var(--primary); font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; font-size: 12px; font-weight: 620; letter-spacing: .045em; }
+.preview-score span { color: var(--primary); font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 12px; font-weight: 650; letter-spacing: .06em; }
 .preview-score strong { margin-top: 8px; font-size: 48px; font-weight: 480; }
 .preview-lines { display: grid; gap: 12px; }
 .preview-lines i { height: 10px; border-radius: 5px; background: var(--surface-soft); }
@@ -252,7 +252,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .error-banner span { color: #785b57; }
 
 @media (max-width: 1100px) {
-  .topbar { grid-template-columns: 145px minmax(140px, 180px) 1fr auto; padding-inline: 20px; }
+  .topbar { grid-template-columns: 145px minmax(140px, 180px) 1fr auto; padding: 0 20px 0 calc(22px + 7vw); }
   .local-status { display: none; }
   .operation-tabs { min-width: 285px; }
   .dashboard-grid { grid-template-columns: minmax(245px, .7fr) minmax(420px, 1.3fr); }
@@ -260,7 +260,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 }
 
 @media (max-width: 920px) {
-  .topbar { grid-template-columns: 135px 150px 1fr auto; gap: 10px; padding-inline: 14px; }
+  .topbar { grid-template-columns: 135px 150px 1fr auto; gap: 10px; padding: 0 14px 0 calc(22px + 3vw); }
   .operation-tabs { min-width: 245px; }
   .run-button { padding-inline: 12px; }
   .dashboard-grid { grid-template-columns: 250px minmax(0, 1fr); }
