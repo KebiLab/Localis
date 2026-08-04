@@ -7,6 +7,8 @@ node_modules/
 dist/
 .next/
 out/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/
 .localis-web.*.log
 .localis-desktop.*.log
 *.tsbuildinfo

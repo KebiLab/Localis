@@ -7,6 +7,11 @@ export default defineConfig({
   server: {
     port: 1420,
     strictPort: true,
+    watch: {
+      // Cargo keeps build executables locked on Windows. Watching them causes
+      // Vite's fs watcher to fail with EBUSY while `tauri dev` is compiling.
+      ignored: ["**/src-tauri/target/**"],
+    },
   },
   envPrefix: ["VITE_", "TAURI_"],
   build: {
