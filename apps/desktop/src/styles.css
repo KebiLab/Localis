@@ -11,6 +11,7 @@
   --surface-soft: #f7f8fa;
   --line: #dce1e6;
   --line-strong: #cbd2d9;
+  --brand: #4d4bb8;
   --primary: #4d4bb8;
   --primary-rgb: 77, 75, 184;
   --primary-soft: #eeedfb;
@@ -47,9 +48,10 @@
   --surface-soft: #252526;
   --line: #303033;
   --line-strong: #454549;
-  --primary: #78a9e8;
-  --primary-rgb: 120, 169, 232;
-  --primary-soft: #203247;
+  --brand: #9293f7;
+  --primary: #f1f1f1;
+  --primary-rgb: 241, 241, 241;
+  --primary-soft: #2d2d2f;
   --green: #70c99b;
   --green-soft: #1d3027;
   --amber: #d7a15d;
@@ -60,9 +62,9 @@
   --action: #e7e7e7;
   --action-hover: #ffffff;
   --on-action: #1f1f1f;
-  --on-primary: #ffffff;
-  --primary-hover: #6398da;
-  --primary-border: #385b7d;
+  --on-primary: #1f1f1f;
+  --primary-hover: #ffffff;
+  --primary-border: #55555a;
   --panel-soft: #1c2923;
   --idle-soft: #2d2d2f;
   --idle-dot: #7f7f85;
@@ -97,9 +99,9 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 }
 
 .brand { display: flex; align-items: center; gap: 11px; padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 22px; font-weight: 760; letter-spacing: -.04em; }
-.brand:hover span { color: var(--primary); }
+.brand:hover span { color: var(--brand); }
 .brand svg { width: 32px; height: 32px; overflow: visible; fill: none; }
-.brand .brand-frame { fill: var(--primary); }
+.brand .brand-frame { fill: var(--brand); }
 .brand .brand-letter { fill: var(--ink); }
 
 .project-picker {
