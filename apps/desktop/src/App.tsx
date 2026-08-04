@@ -17,15 +17,15 @@ const operations: Array<{ id: Operation; label: string; description: string }> =
   { id: "ship", label: "Ship", description: "Run every release check" },
 ];
 
-function Logo() {
+function Logo({ onClick }: { onClick: () => void }) {
   return (
-    <div className="brand" aria-label="Localis">
+    <button className="brand" type="button" onClick={onClick} aria-label="Go to Audit home" title="Go to Audit home">
       <svg viewBox="0 0 40 40" aria-hidden="true">
         <path d="M20 3.75 33.85 11.7v16.1L20 35.75 6.15 27.8V11.7L20 3.75Z" />
         <path className="brand-letter" d="M14 12.5v14.75h12" />
       </svg>
       <span>Localis</span>
-    </div>
+    </button>
   );
 }
 
@@ -313,10 +313,17 @@ export function App() {
     }
   }
 
+  function goHome() {
+    setOperation("audit");
+    setReport(null);
+    setReportType(null);
+    setError("");
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
-        <Logo />
+        <Logo onClick={goHome} />
         <button className="project-picker" onClick={chooseProject} title={project || "Choose a local repository"}>
           <FolderIcon />
           <span>{projectName}</span>
