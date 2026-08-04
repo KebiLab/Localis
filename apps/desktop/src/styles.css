@@ -90,8 +90,21 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .operation-tabs button:hover { color: var(--ink); }
 .operation-tabs button.active { background: var(--surface); box-shadow: 0 1px 4px rgba(25, 35, 46, .09); color: var(--primary); }
 
-.local-status { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 13px; font-weight: 650; white-space: nowrap; }
-.local-status i { width: 8px; height: 8px; border-radius: 50%; background: #49a278; }
+.local-status {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid #c8dfd1;
+  border-radius: 999px;
+  background: #eaf4ee;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+.local-status i { width: 8px; height: 8px; border-radius: 50%; background: #49a278; box-shadow: 0 0 0 4px rgba(73, 162, 120, .12); }
 
 .run-button,
 .secondary-button {
@@ -114,6 +127,8 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .run-button:hover:not(:disabled), .secondary-button:hover { background: #403e9c; transform: translateY(-1px); }
 .run-button:disabled { cursor: not-allowed; opacity: .42; }
 .run-button svg { width: 16px; fill: none; stroke: currentColor; stroke-linejoin: round; stroke-width: 1.7; }
+.secondary-button { min-height: 52px; gap: 11px; padding: 0 22px; border-radius: 14px; font-size: 14px; }
+.secondary-button svg { width: 19px; height: 19px; }
 
 .workspace { height: calc(100vh - 86px); overflow: auto; padding: 28px 30px 34px; }
 
@@ -216,16 +231,16 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .empty-layout { min-height: 100%; display: grid; grid-template-columns: minmax(360px, .9fr) minmax(420px, 1.1fr); align-items: center; gap: clamp(40px, 7vw, 100px); padding: 7vh 7vw; }
 .empty-copy { max-width: 470px; }
 .empty-copy h1 { margin: 0 0 18px; font-size: clamp(48px, 5vw, 70px); font-weight: 650; letter-spacing: -.065em; line-height: .98; }
-.empty-copy p { max-width: 470px; margin: 0 0 28px; color: var(--muted); font-size: 16px; line-height: 1.65; }
+.empty-copy p { max-width: 530px; margin: 0 0 30px; color: #596675; font-size: 18px; line-height: 1.6; }
 .secondary-button { background: var(--ink); }
 .secondary-button:hover { background: #28323f; }
-.secondary-button svg { width: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.secondary-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 
 .empty-preview { position: relative; min-height: 420px; padding: 25px; overflow: hidden; }
 .preview-head { display: flex; gap: 6px; }
 .preview-head i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
 .preview-score { width: 170px; height: 170px; display: grid; place-content: center; margin: 38px auto 30px; border: 10px solid var(--primary-soft); border-radius: 50%; text-align: center; }
-.preview-score span { color: var(--primary); font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+.preview-score span { color: var(--primary); font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; font-size: 12px; font-weight: 620; letter-spacing: .045em; }
 .preview-score strong { margin-top: 8px; font-size: 48px; font-weight: 480; }
 .preview-lines { display: grid; gap: 12px; }
 .preview-lines i { height: 10px; border-radius: 5px; background: var(--surface-soft); }
