@@ -8,6 +8,7 @@ type Locale = "en" | "ru";
 
 const copy = {
   en: {
+    heroPoster: ["PRIVATE BY", "DEFAULT."],
     heroTitle: "Your code stays on your machine.",
     heroBody: "Local audits run offline. AI receives only the files and context you explicitly approve.",
     heroFacts: ["Offline audit by default.", "Preview every AI payload.", "No telemetry.", "Review before write."],
@@ -37,6 +38,7 @@ const copy = {
     inspired: "Inspired by the open-source work and ideas of Andrew-py-dew.",
   },
   ru: {
+    heroPoster: ["ПРИВАТНО ПО", "УМОЛЧАНИЮ."],
     heroTitle: "Ваш код остаётся на вашем компьютере.",
     heroBody: "Локальный аудит работает офлайн. ИИ получает только те файлы и контекст, которые вы разрешили отправить.",
     heroFacts: ["Аудит офлайн по умолчанию.", "Предпросмотр каждого AI-запроса.", "Без телеметрии.", "Проверка до записи."],
@@ -97,7 +99,7 @@ export function MarketingPage({ locale }: { locale: Locale }) {
       <SiteHeader locale={locale} />
 
       <section className="posterHero shell" aria-labelledby="hero-title">
-        <div className="posterTitle" id="hero-title"><span>PRIVATE BY</span><span>DEFAULT.</span></div>
+        <div className={`posterTitle ${locale === "ru" ? "posterTitleRu" : ""}`} id="hero-title">{t.heroPoster.map((line) => <span key={line}>{line}</span>)}</div>
         <aside className="posterAside">
           <span className="verifiedStamp">✓ VERIFIED LOCAL</span>
           <h1>{t.heroTitle}</h1>

@@ -1,11 +1,12 @@
 import { Logo } from "@/components/logo";
+import { InstallTabs } from "@/components/install-tabs";
 import { SiteHeader } from "@/components/site-header";
 
 type Locale = "en" | "ru";
 
 const docs = {
   en: {
-    eyebrow: "LOCALIS DOCUMENTATION",
+    introLabel: "Documentation for Localis 0.2",
     title: "Start local.\nAdd AI deliberately.",
     intro: "Install the CLI, audit a repository without a model, then connect Ollama, LM Studio, or an OpenAI-compatible provider only when you need it.",
     nav: ["Install", "First audit", "Commands", "AI providers", "Privacy", "Desktop", "Release gate"],
@@ -20,7 +21,7 @@ const docs = {
     ],
   },
   ru: {
-    eyebrow: "ДОКУМЕНТАЦИЯ LOCALIS",
+    introLabel: "Руководство по Localis 0.2",
     title: "Начните локально.\nПодключайте ИИ осознанно.",
     intro: "Установите CLI, проверьте репозиторий без модели, а затем при необходимости подключите Ollama, LM Studio или OpenAI-совместимый API.",
     nav: ["Установка", "Первый аудит", "Команды", "AI-провайдеры", "Приватность", "Приложение", "Проверка релиза"],
@@ -42,17 +43,18 @@ export function DocsPage({ locale }: { locale: Locale }) {
     <main>
       <SiteHeader locale={locale} page="docs" />
       <section className="docsHero shell">
-        <p>{t.eyebrow}</p>
+        <p>{t.introLabel}</p>
         <h1>{t.title.split("\n").map((line) => <span key={line}>{line}</span>)}</h1>
         <div><p>{t.intro}</p><a href="#install">{locale === "ru" ? "Начать ↓" : "Get started ↓"}</a></div>
       </section>
       <div className="docsLayout shell">
         <aside className="docsSidebar">
-          <strong>{locale === "ru" ? "На этой странице" : "On this page"}</strong>
+          <strong>{locale === "ru" ? "Содержание" : "Contents"}</strong>
           <nav>{t.sections.map((section, index) => <a key={section.id} href={`#${section.id}`}>{t.nav[index]}</a>)}</nav>
           <a className="docsGithub" href="https://github.com/KebiLab/Localis">Edit on GitHub ↗</a>
         </aside>
         <article className="docsContent">
+          <InstallTabs locale={locale} />
           {t.sections.map((section) => (
             <section key={section.id} id={section.id}>
               <h2>{section.title}</h2>
