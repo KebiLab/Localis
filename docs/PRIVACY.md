@@ -11,7 +11,7 @@ preview/apply/undo, test discovery, and ship checks do not require network
 access. `ask --dry-run`, `propose --dry-run`, and `fix --dry-run` build the exact
 context preview without contacting a model.
 
-## Local model boundary
+## Model provider boundary
 
 Ollama uses `/api/generate`; LM Studio uses its OpenAI-compatible
 `/v1/chat/completions` endpoint. Both providers accept only plain HTTP on:
@@ -20,8 +20,16 @@ Ollama uses `/api/generate`; LM Studio uses its OpenAI-compatible
 - `127.0.0.1`;
 - `::1`.
 
-Remote hosts and HTTPS endpoints are rejected before `fetch` runs. The provider
-flag chooses a local runtime, not an arbitrary compatible server.
+For these two local providers, remote hosts and HTTPS endpoints are rejected
+before `fetch` runs. Their provider flags choose a local runtime, not an
+arbitrary compatible server.
+
+The `openai-compatible` provider is the explicit remote boundary. It requires
+an HTTPS base URL (loopback development endpoints may use HTTP), discovers
+models through `/models`, and sends prompts through `/chat/completions`. API
+keys are supplied through an environment variable in the CLI. The desktop app
+keeps them in process memory for the current session and never writes them to
+local storage or passes them in command-line arguments.
 
 ## Context preparation
 
@@ -37,9 +45,11 @@ plan, so a placeholder cannot disclose a value across files.
 
 ## Desktop and website
 
-The desktop app has no remote origin or telemetry configuration. It opens a
-folder only after a native user selection and delegates reports to the local
-CLI. The public website is independent and never accepts repository contents.
+The desktop app has no remote WebView origin or telemetry configuration. It
+opens a folder only after a native user selection and delegates reports to the
+local CLI. A remote provider receives bounded, redacted project context only
+after the user connects it and sends a question. The public website is
+independent and never accepts repository contents.
 
 ## Limits
 

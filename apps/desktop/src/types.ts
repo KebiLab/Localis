@@ -49,3 +49,41 @@ export interface ShipReport {
 
 export type WorkspaceReport = AuditReport | PrivacyReport | ShipReport;
 export type Operation = "audit" | "privacy" | "ship";
+
+export type ModelProvider = "ollama" | "lmstudio" | "openai-compatible";
+
+export interface ProviderModel {
+  name: string;
+  ownedBy?: string;
+  size?: number;
+  modifiedAt?: string;
+}
+
+export interface ProviderSettings {
+  preset: "ollama" | "lmstudio" | "openai" | "openrouter" | "custom";
+  connectionId: string;
+  provider: ModelProvider;
+  label: string;
+  endpoint: string;
+  model: string;
+}
+
+export interface ProviderModelsResponse {
+  provider: ModelProvider;
+  models: ProviderModel[];
+}
+
+export interface AskResponse {
+  result: {
+    model: string;
+    response: string;
+    promptTokens?: number;
+    responseTokens?: number;
+    durationMs?: number;
+  };
+  preview: {
+    files: Array<{ path: string; outputBytes: number; redactions: number; truncated: boolean }>;
+    outputBytes: number;
+    redactions: Record<"SECRET" | "TOKEN" | "PII", number>;
+  };
+}

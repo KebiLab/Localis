@@ -165,7 +165,7 @@ export async function runCli(args: string[]): Promise<CliResult> {
         stdout: json ? JSON.stringify({ provider, models }, null, 2) : formatModels(models, provider),
       };
     } catch (error) {
-      return commandError("OLLAMA_FAILED", error, json);
+      return commandError("PROVIDER_FAILED", error, json);
     }
   }
 

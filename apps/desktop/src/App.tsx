@@ -3,10 +3,14 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useMemo, useState } from "react";
 
 import type {
+  AskResponse,
   AuditFinding,
   AuditReport,
   Operation,
   PrivacyReport,
+  ProviderModel,
+  ProviderModelsResponse,
+  ProviderSettings,
   ShipReport,
   WorkspaceReport,
 } from "./types";
@@ -16,6 +20,41 @@ const operations: Array<{ id: Operation; label: string; description: string }> =
   { id: "privacy", label: "Privacy", description: "Review the outbound boundary" },
   { id: "ship", label: "Ship", description: "Run every release check" },
 ];
+
+type WorkspaceView = Operation | "ai" | "settings";
+type ProviderPreset = ProviderSettings["preset"];
+
+const PROVIDER_STORAGE_KEY = "localis.provider.v1";
+const PROVIDER_PRESETS: Record<ProviderPreset, Omit<ProviderSettings, "model">> = {
+  ollama: { preset: "ollama", connectionId: "ollama", provider: "ollama", label: "Ollama", endpoint: "http://127.0.0.1:11434" },
+  lmstudio: { preset: "lmstudio", connectionId: "lmstudio", provider: "lmstudio", label: "LM Studio", endpoint: "http://127.0.0.1:1234" },
+  openai: { preset: "openai", connectionId: "openai", provider: "openai-compatible", label: "OpenAI", endpoint: "https://api.openai.com/v1" },
+  openrouter: { preset: "openrouter", connectionId: "openrouter", provider: "openai-compatible", label: "OpenRouter", endpoint: "https://openrouter.ai/api/v1" },
+  custom: { preset: "custom", connectionId: "custom-compatible", provider: "openai-compatible", label: "Custom API", endpoint: "" },
+};
+
+function loadProviderSettings(): ProviderSettings {
+  const fallback = { ...PROVIDER_PRESETS.ollama, model: "" };
+  try {
+    const saved = localStorage.getItem(PROVIDER_STORAGE_KEY);
+    if (!saved) return fallback;
+    const value = JSON.parse(saved) as Partial<ProviderSettings>;
+    if (!value.preset || !PROVIDER_PRESETS[value.preset]) return fallback;
+    const preset = PROVIDER_PRESETS[value.preset];
+    return {
+      ...preset,
+      label: typeof value.label === "string" ? value.label.slice(0, 80) : preset.label,
+      endpoint: typeof value.endpoint === "string" ? value.endpoint.slice(0, 2048) : preset.endpoint,
+      model: typeof value.model === "string" ? value.model.slice(0, 500) : "",
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function saveProviderSettings(settings: ProviderSettings) {
+  localStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(settings));
+}
 
 function Logo({ onClick }: { onClick: () => void }) {
   return (
@@ -58,6 +97,23 @@ function PlayIcon() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
       <path d="m7 5 7 5-7 5V5Z" />
+    </svg>
+  );
+}
+
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <circle cx="10" cy="10" r="2.6" />
+      <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4" />
+    </svg>
+  );
+}
+
+function SparkIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M10 2.5c.5 4.2 2.1 5.8 6.3 6.3-4.2.5-5.8 2.1-6.3 6.3-.5-4.2-2.1-5.8-6.3-6.3C7.9 8.3 9.5 6.7 10 2.5Z" />
     </svg>
   );
 }
@@ -278,16 +334,255 @@ function ShipView({ report }: { report: ShipReport }) {
   );
 }
 
+function SettingsView({
+  settings,
+  models,
+  apiKey,
+  filter,
+  connected,
+  busy,
+  error,
+  onPreset,
+  onLabel,
+  onEndpoint,
+  onApiKey,
+  onFilter,
+  onModel,
+  onConnect,
+  onDisconnect,
+}: {
+  settings: ProviderSettings;
+  models: ProviderModel[];
+  apiKey: string;
+  filter: string;
+  connected: boolean;
+  busy: boolean;
+  error: string;
+  onPreset: (preset: ProviderPreset) => void;
+  onLabel: (label: string) => void;
+  onEndpoint: (endpoint: string) => void;
+  onApiKey: (key: string) => void;
+  onFilter: (filter: string) => void;
+  onModel: (model: string) => void;
+  onConnect: () => void;
+  onDisconnect: () => void;
+}) {
+  const visibleModels = models.filter((model) =>
+    model.name.toLowerCase().includes(filter.trim().toLowerCase()),
+  );
+  const remote = settings.provider === "openai-compatible";
+
+  return (
+    <div className="settings-layout">
+      <aside className="provider-rail card">
+        <div className="settings-title">
+          <span>AI connections</span>
+          <strong>Providers</strong>
+        </div>
+        <div className="provider-options">
+          {(Object.keys(PROVIDER_PRESETS) as ProviderPreset[]).map((preset) => {
+            const item = PROVIDER_PRESETS[preset];
+            return (
+              <button
+                className={settings.preset === preset ? "active" : ""}
+                key={preset}
+                onClick={() => onPreset(preset)}
+              >
+                <span>{item.label}</span>
+                <small>{item.provider === "openai-compatible" ? "API" : "Local"}</small>
+              </button>
+            );
+          })}
+        </div>
+        <div className="provider-privacy">
+          <StatusIcon />
+          <p><strong>Session-only secret</strong><span>API keys stay in memory and clear when Localis closes.</span></p>
+        </div>
+      </aside>
+
+      <section className="provider-settings card">
+        <div className="provider-settings-head">
+          <div>
+            <span>Provider connection</span>
+            <h1>{settings.label}</h1>
+          </div>
+          <div className={`connection-chip ${connected ? "connected" : ""}`}><i />{connected ? "Connected" : "Not connected"}</div>
+        </div>
+
+        <div className="provider-form">
+          {settings.preset === "custom" && (
+            <label>
+              <span>Connection name</span>
+              <input value={settings.label} maxLength={80} onChange={(event) => onLabel(event.target.value)} placeholder="My provider" />
+            </label>
+          )}
+          <label className="wide-field">
+            <span>Base URL</span>
+            <input value={settings.endpoint} onChange={(event) => onEndpoint(event.target.value)} placeholder="https://api.provider.com/v1" spellCheck={false} />
+          </label>
+          {remote && (
+            <label className="wide-field">
+              <span>API key <small>not saved to disk</small></span>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(event) => onApiKey(event.target.value)}
+                placeholder={connected ? "Session key is loaded" : "Paste a provider API key"}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+          )}
+          <div className="provider-actions wide-field">
+            <button className="connect-button" onClick={onConnect} disabled={busy || !settings.endpoint.trim()}>
+              <SparkIcon />
+              {busy ? "Loading models…" : "Connect and load models"}
+            </button>
+            {connected && <button className="disconnect-button" onClick={onDisconnect}>Disconnect</button>}
+          </div>
+        </div>
+
+        {error && <div className="provider-error"><strong>Connection failed</strong><span>{error}</span></div>}
+
+        <div className="model-catalog">
+          <div className="model-catalog-head">
+            <div><span>Discovered catalog</span><strong>{models.length} models</strong></div>
+            <input value={filter} onChange={(event) => onFilter(event.target.value)} placeholder="Filter models" disabled={!models.length} />
+          </div>
+          <div className="model-list">
+            {visibleModels.length ? visibleModels.map((model) => (
+              <button className={settings.model === model.name ? "selected" : ""} key={model.name} onClick={() => onModel(model.name)}>
+                <span><strong>{model.name}</strong><small>{model.ownedBy ?? "Available from provider"}</small></span>
+                <i>{settings.model === model.name ? "✓" : ""}</i>
+              </button>
+            )) : (
+              <div className="model-empty">
+                <SparkIcon />
+                <strong>{models.length ? "No matching model" : "Connect to discover models"}</strong>
+                <span>Localis reads the provider model catalog automatically.</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function AIView({
+  project,
+  settings,
+  connected,
+  question,
+  answer,
+  busy,
+  error,
+  onQuestion,
+  onAsk,
+  onChooseProject,
+  onOpenSettings,
+}: {
+  project: string;
+  settings: ProviderSettings;
+  connected: boolean;
+  question: string;
+  answer: AskResponse | null;
+  busy: boolean;
+  error: string;
+  onQuestion: (value: string) => void;
+  onAsk: () => void;
+  onChooseProject: () => void;
+  onOpenSettings: () => void;
+}) {
+  if (!connected || !settings.model) {
+    return (
+      <div className="ai-onboarding card">
+        <div className="ai-mark"><SparkIcon /></div>
+        <h1>Connect your AI.</h1>
+        <p>Choose a provider, load its model catalog, and keep control of the exact context Localis prepares.</p>
+        <button className="secondary-button" onClick={onOpenSettings}><GearIcon />Open settings</button>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="ai-onboarding card">
+        <div className="ai-mark"><FolderIcon /></div>
+        <h1>Choose a repository.</h1>
+        <p>Localis needs a project before it can prepare redacted context for {settings.label}.</p>
+        <button className="secondary-button" onClick={onChooseProject}><FolderIcon />Choose project</button>
+      </div>
+    );
+  }
+
+  const redactions = answer
+    ? Object.values(answer.preview.redactions).reduce((total, value) => total + value, 0)
+    : 0;
+
+  return (
+    <div className="ai-layout">
+      <aside className="ai-context card">
+        <div className="settings-title"><span>Active connection</span><strong>{settings.label}</strong></div>
+        <dl>
+          <div><dt>Model</dt><dd>{settings.model}</dd></div>
+          <div><dt>Endpoint</dt><dd>{settings.endpoint}</dd></div>
+          <div><dt>Context files</dt><dd>{answer?.preview.files.length ?? "—"}</dd></div>
+          <div><dt>Redactions</dt><dd>{answer ? redactions : "—"}</dd></div>
+        </dl>
+        <div className="context-note"><StatusIcon /><p><strong>Preview before trust</strong><span>Secrets are redacted before project context reaches the provider.</span></p></div>
+        <button className="quiet-button" onClick={onOpenSettings}><GearIcon />Change provider</button>
+      </aside>
+
+      <section className="ai-chat card">
+        <div className="ai-chat-head">
+          <div><span>Project-aware answer</span><h1>Ask Localis</h1></div>
+          {answer && <code>{answer.result.model}</code>}
+        </div>
+        <div className="ai-answer">
+          {answer ? (
+            <div className="answer-copy">{answer.result.response}</div>
+          ) : (
+            <div className="answer-empty"><SparkIcon /><strong>Ask about architecture, risk, or a specific file.</strong><span>Localis sends bounded, redacted context—not the entire repository.</span></div>
+          )}
+        </div>
+        {error && <div className="provider-error"><strong>AI request failed</strong><span>{error}</span></div>}
+        <div className="prompt-box">
+          <textarea
+            value={question}
+            onChange={(event) => onQuestion(event.target.value)}
+            placeholder="How does authentication work in this project?"
+            maxLength={4000}
+          />
+          <div><span>{question.length}/4000</span><button onClick={onAsk} disabled={busy || !question.trim()}><SparkIcon />{busy ? "Thinking…" : "Ask AI"}</button></div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function App() {
   const [project, setProject] = useState("");
-  const [operation, setOperation] = useState<Operation>("audit");
+  const [view, setView] = useState<WorkspaceView>("audit");
   const [report, setReport] = useState<WorkspaceReport | null>(null);
   const [reportType, setReportType] = useState<Operation | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [providerSettings, setProviderSettings] = useState<ProviderSettings>(loadProviderSettings);
+  const [providerModels, setProviderModels] = useState<ProviderModel[]>([]);
+  const [providerKey, setProviderKey] = useState("");
+  const [providerFilter, setProviderFilter] = useState("");
+  const [providerConnected, setProviderConnected] = useState(false);
+  const [providerBusy, setProviderBusy] = useState(false);
+  const [providerError, setProviderError] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState<AskResponse | null>(null);
+  const [askBusy, setAskBusy] = useState(false);
+  const [askError, setAskError] = useState("");
 
   const projectName = useMemo(() => project.split(/[\\/]/).filter(Boolean).at(-1) ?? "Workspace", [project]);
-  const activeReport = reportType === operation ? report : null;
+  const operation = operations.some((item) => item.id === view) ? view as Operation : null;
+  const activeReport = operation && reportType === operation ? report : null;
 
   async function chooseProject() {
     const selected = await open({ directory: true, multiple: false, title: "Open a repository in Localis" });
@@ -300,7 +595,7 @@ export function App() {
   }
 
   async function run() {
-    if (!project.trim()) {
+    if (!operation || !project.trim()) {
       setError("Choose a project folder before running Localis.");
       return;
     }
@@ -317,8 +612,104 @@ export function App() {
     }
   }
 
+  function selectProviderPreset(preset: ProviderPreset) {
+    void invoke("forget_provider_secret", { connectionId: providerSettings.connectionId }).catch(() => undefined);
+    const next = { ...PROVIDER_PRESETS[preset], model: "" };
+    setProviderSettings(next);
+    saveProviderSettings(next);
+    setProviderModels([]);
+    setProviderKey("");
+    setProviderFilter("");
+    setProviderConnected(false);
+    setProviderError("");
+    setAnswer(null);
+  }
+
+  function updateProviderSettings(patch: Partial<ProviderSettings>) {
+    if (providerConnected) {
+      void invoke("forget_provider_secret", { connectionId: providerSettings.connectionId }).catch(() => undefined);
+    }
+    const next = { ...providerSettings, ...patch };
+    setProviderSettings(next);
+    saveProviderSettings(next);
+    setProviderConnected(false);
+    setProviderModels([]);
+    setProviderError("");
+    setAnswer(null);
+  }
+
+  async function connectProvider() {
+    setProviderBusy(true);
+    setProviderError("");
+    try {
+      const response = await invoke<ProviderModelsResponse>("discover_provider_models", {
+        connectionId: providerSettings.connectionId,
+        provider: providerSettings.provider,
+        endpoint: providerSettings.endpoint,
+        apiKey: providerKey.trim() || null,
+      });
+      const models = [...response.models].sort((left, right) => left.name.localeCompare(right.name));
+      const selected = models.some((model) => model.name === providerSettings.model)
+        ? providerSettings.model
+        : models[0]?.name ?? "";
+      const next = { ...providerSettings, model: selected };
+      setProviderSettings(next);
+      saveProviderSettings(next);
+      setProviderModels(models);
+      setProviderConnected(true);
+      setProviderKey("");
+      setProviderFilter("");
+    } catch (cause) {
+      setProviderConnected(false);
+      setProviderModels([]);
+      setProviderError(String(cause));
+    } finally {
+      setProviderBusy(false);
+    }
+  }
+
+  async function disconnectProvider() {
+    await invoke("forget_provider_secret", { connectionId: providerSettings.connectionId }).catch(() => undefined);
+    const next = { ...providerSettings, model: "" };
+    setProviderSettings(next);
+    saveProviderSettings(next);
+    setProviderModels([]);
+    setProviderConnected(false);
+    setProviderKey("");
+    setProviderError("");
+    setAnswer(null);
+  }
+
+  function selectProviderModel(model: string) {
+    const next = { ...providerSettings, model };
+    setProviderSettings(next);
+    saveProviderSettings(next);
+    setAnswer(null);
+  }
+
+  async function askAI() {
+    if (!project || !providerConnected || !providerSettings.model || !question.trim()) return;
+    setAskBusy(true);
+    setAskError("");
+    try {
+      const result = await invoke<AskResponse>("ask_provider", {
+        connectionId: providerSettings.connectionId,
+        project,
+        question,
+        provider: providerSettings.provider,
+        endpoint: providerSettings.endpoint,
+        model: providerSettings.model,
+      });
+      setAnswer(result);
+    } catch (cause) {
+      setAskError(String(cause));
+    } finally {
+      setAskBusy(false);
+    }
+  }
+
   function goHome() {
-    setOperation("audit");
+    setView("audit");
     setReport(null);
     setReportType(null);
     setError("");
@@ -334,35 +725,81 @@ export function App() {
           <ChevronDownIcon />
         </button>
         <nav className="operation-tabs" aria-label="Workspace tools">
-          {operations.map((item) => (
+          {[...operations.slice(0, 2), { id: "ai" as const, label: "AI", description: "Ask a connected model" }, operations[2]!].map((item) => (
             <button
-              aria-current={operation === item.id ? "page" : undefined}
-              className={operation === item.id ? "active" : ""}
+              aria-current={view === item.id ? "page" : undefined}
+              className={view === item.id ? "active" : ""}
               key={item.id}
-              onClick={() => { setOperation(item.id); setError(""); }}
+              onClick={() => { setView(item.id); setError(""); setAskError(""); }}
               title={item.description}
             >
               {item.label}
             </button>
           ))}
         </nav>
-        <div className="local-status"><i /><span>Local machine</span></div>
-        <button className="run-button" onClick={run} disabled={busy || !project.trim()}>
+        <div className={`local-status ${providerConnected && providerSettings.provider === "openai-compatible" ? "cloud" : ""}`}>
+          <i /><span>{providerConnected ? providerSettings.label : "Local machine"}</span>
+        </div>
+        <button
+          className={`settings-button ${view === "settings" ? "active" : ""}`}
+          onClick={() => { setView("settings"); setError(""); }}
+          aria-label="AI provider settings"
+          title="AI provider settings"
+        ><GearIcon /></button>
+        {operation ? (
+          <button className="run-button" onClick={run} disabled={busy || !project.trim()}>
           <PlayIcon />
           {busy ? "Running…" : `Run ${operation}`}
-        </button>
+          </button>
+        ) : <div className="run-button-placeholder" />}
       </header>
 
       <section className="workspace">
-        {error && <div className="error-banner"><strong>Localis could not run</strong><span>{error}</span></div>}
-        {!activeReport ? (
-          <EmptyState operation={operation} onChoose={chooseProject} />
-        ) : operation === "audit" ? (
-          <AuditView report={activeReport as AuditReport} />
-        ) : operation === "privacy" ? (
-          <PrivacyView report={activeReport as PrivacyReport} />
+        {view === "settings" ? (
+          <SettingsView
+            settings={providerSettings}
+            models={providerModels}
+            apiKey={providerKey}
+            filter={providerFilter}
+            connected={providerConnected}
+            busy={providerBusy}
+            error={providerError}
+            onPreset={selectProviderPreset}
+            onLabel={(label) => updateProviderSettings({ label })}
+            onEndpoint={(endpoint) => updateProviderSettings({ endpoint })}
+            onApiKey={setProviderKey}
+            onFilter={setProviderFilter}
+            onModel={selectProviderModel}
+            onConnect={connectProvider}
+            onDisconnect={disconnectProvider}
+          />
+        ) : view === "ai" ? (
+          <AIView
+            project={project}
+            settings={providerSettings}
+            connected={providerConnected}
+            question={question}
+            answer={answer}
+            busy={askBusy}
+            error={askError}
+            onQuestion={setQuestion}
+            onAsk={askAI}
+            onChooseProject={chooseProject}
+            onOpenSettings={() => setView("settings")}
+          />
         ) : (
-          <ShipView report={activeReport as ShipReport} />
+          <>
+            {error && <div className="error-banner"><strong>Localis could not run</strong><span>{error}</span></div>}
+            {!activeReport ? (
+              <EmptyState operation={operation!} onChoose={chooseProject} />
+            ) : operation === "audit" ? (
+              <AuditView report={activeReport as AuditReport} />
+            ) : operation === "privacy" ? (
+              <PrivacyView report={activeReport as PrivacyReport} />
+            ) : (
+              <ShipView report={activeReport as ShipReport} />
+            )}
+          </>
         )}
       </section>
     </main>

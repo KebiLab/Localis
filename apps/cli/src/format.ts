@@ -178,7 +178,7 @@ export function formatPrivacyPreview(preview: ContextPreview): string {
   output.push(
     "",
     paint(
-      "No network request was made. Use ask to send this redacted context to local Ollama.",
+      "No network request was made. Use ask to send this redacted context to the selected provider.",
       "dim",
     ),
     "",
@@ -189,14 +189,18 @@ export function formatPrivacyPreview(preview: ContextPreview): string {
 export function formatModels(models: LocalModel[], provider: LocalModelProvider = "ollama"): string {
   const output = [
     "",
-    `${paint("LOCALIS", "violet")}  ${paint("LOCAL MODELS", "dim")}`,
+    `${paint("LOCALIS", "violet")}  ${paint("AVAILABLE MODELS", "dim")}`,
     paint("─".repeat(64), "dim"),
   ];
 
   if (models.length === 0) {
-    output.push(provider === "ollama"
-      ? "No Ollama models are installed. Pull one with: ollama pull qwen2.5-coder:7b"
-      : "No LM Studio models are loaded. Load a model and start the local server.");
+    output.push(
+      provider === "ollama"
+        ? "No Ollama models are installed. Pull one with: ollama pull qwen2.5-coder:7b"
+        : provider === "lmstudio"
+          ? "No LM Studio models are loaded. Load a model and start the local server."
+          : "The API provider returned no models.",
+    );
   } else {
     for (const model of models) {
       output.push(

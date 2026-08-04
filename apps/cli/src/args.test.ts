@@ -17,6 +17,8 @@ test("argument parser preserves repeated context files", () => {
     "plan.json",
     "--provider",
     "lmstudio",
+    "--api-key-env",
+    "OPENAI_API_KEY",
     "--json",
   ]);
 
@@ -25,6 +27,7 @@ test("argument parser preserves repeated context files", () => {
   assert.equal(optionValue(parsed, "--max-files"), "12");
   assert.equal(optionValue(parsed, "--out"), "plan.json");
   assert.equal(optionValue(parsed, "--provider"), "lmstudio");
+  assert.equal(optionValue(parsed, "--api-key-env"), "OPENAI_API_KEY");
   assert.equal(parsed.flags.has("--json"), true);
 });
 

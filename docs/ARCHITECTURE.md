@@ -8,7 +8,7 @@ Desktop (Tauri) -----+--- Localis Core --- Project files
 CI ------------------+          |
                                 +-- Deterministic rules
                                 +-- Privacy Gateway
-                                +-- Local model providers
+                                +-- Explicit model providers
                                 +-- Transactional changes
                                 +-- Verification and ship gate
 ```
@@ -23,7 +23,8 @@ capability whose contract explicitly describes that request.
 AI work is split into explicit boundaries:
 
 - `prepareProjectContext()` selects, bounds, redacts, and hashes context without network access;
-- `generateWithLocalModel()` uses either Ollama or LM Studio and rejects non-loopback endpoints;
+- `generateWithLocalModel()` routes to Ollama, LM Studio, or the explicit OpenAI-compatible adapter;
+- `listOpenAICompatibleModels()` discovers a remote provider catalog over HTTPS;
 - `proposeChangePlanWithLocalModel()` validates structured model output as untrusted input;
 - `proposeFindingFixWithLocalModel()` limits context to one current audit finding and file.
 
@@ -48,11 +49,12 @@ The CLI renders the same reports for humans and automation. Exit codes are:
 
 ### Desktop
 
-The Tauri 2 shell exposes only `audit`, `privacy`, `ship`, and `doctor` through
-its Rust bridge. It canonicalizes the selected project directory, invokes the
-CLI without a shell, caps report size, and parses JSON before returning data to
-the WebView. Its capability file grants only core defaults and native folder
-selection.
+The Tauri 2 shell exposes allowlisted report, provider discovery, and AI ask
+commands through its Rust bridge. It canonicalizes the selected project
+directory, invokes the CLI without a shell, caps report size, and parses JSON
+before returning data to the WebView. API keys live in Rust process memory and
+reach the CLI only through a child-process environment variable. Its capability
+file grants only core defaults and native folder selection.
 
 ### Web
 
@@ -62,6 +64,6 @@ analyzes source code.
 ## Trust boundaries
 
 Project source, model output, plan files, subprocess output, and stored backup
-metadata are all treated as untrusted. Network access is opt-in and limited to
-local model endpoints. Filesystem writes require an explicit confirmed change
-plan and are conflict checked.
+metadata are all treated as untrusted. Network access is opt-in: loopback-only
+for local runtimes and HTTPS-only for the generic API adapter. Filesystem writes
+require an explicit confirmed change plan and are conflict checked.

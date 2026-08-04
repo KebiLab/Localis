@@ -12,10 +12,10 @@ Commands:
   audit [path]     Scan a project with deterministic local rules
   doctor           Check Node.js, Git, and optional Ollama readiness
   privacy [path]   Preview the exact redacted project context
-  models           List models from Ollama or LM Studio
-  ask <question>   Ask a local model about redacted project context
-  propose <task>   Generate a validated plan with a local model
-  fix <finding>    Generate a plan for an audit finding number or ID
+  models           List models exposed by the selected provider
+  ask <question>   Ask a selected model about redacted project context
+  propose <task>   Generate a validated plan with the selected model
+  fix <finding>    Generate a model plan for an audit finding number or ID
   test [path]      Discover and run project tests
   ship [path]      Gate a release on audit, tests, types, lint, and build
   apply <plan>     Preview a change plan; add --yes to apply it
@@ -29,11 +29,11 @@ Options:
   --model <name>   Select a model from the active provider
   --provider <id>  Select ollama, lmstudio, or openai-compatible
   --check <id>     Run a discovered verification check (repeatable)
-  --endpoint <url> Override the selected loopback provider endpoint
+  --endpoint <url> Override the selected provider base URL
   --api-key-env <name> Read a remote provider key from this environment variable
   --out <file>     Save a generated change plan without overwriting
   --max-files <n>  Limit context files (default: 24)
-  --dry-run        Build context without calling Ollama
+  --dry-run        Build context without calling a provider
   --show-payload   Print redacted payload (privacy command only)
   --yes            Confirm a write or undo operation
   --version, -v    Print the Localis version

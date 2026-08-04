@@ -24,16 +24,25 @@ For a new file, `beforeSha256` is `null`. Version 1 intentionally does not suppo
 
 The `createChangePlan()` core API computes source hashes for trusted callers. Future AI workflows will produce proposals and pass them through this API rather than constructing unchecked plans.
 
-## Generate with local Ollama
+## Generate with a selected provider
 
 ```bash
 localis propose "Add input validation to the API routes" . \
   --file src --out localis-plan.json
 ```
 
-`propose` sends only bounded, redacted context to a loopback-only Ollama endpoint. It uses Ollama structured output with a JSON Schema and temperature `0`, then independently validates the returned paths and complete file contents. Known redaction placeholders are restored locally and only for their originating file; secret values never enter the model request. Localis computes every `beforeSha256` itself from the current project.
+`propose` sends only bounded, redacted context to the explicitly selected
+provider. Ollama and LM Studio remain loopback-only; the generic
+OpenAI-compatible adapter requires HTTPS for remote hosts. Localis requests
+structured output with a JSON Schema and temperature `0`, then independently
+validates the returned paths and complete file contents. Known redaction
+placeholders are restored locally and only for their originating file; secret
+values never enter the model request. Localis computes every `beforeSha256`
+itself from the current project.
 
-The model cannot write source files. `--out` only creates a new plan file and refuses to overwrite an existing one. Use `propose --dry-run` to inspect the context manifest without contacting Ollama.
+The model cannot write source files. `--out` only creates a new plan file and
+refuses to overwrite an existing one. Use `propose --dry-run` to inspect the
+context manifest without contacting a provider.
 
 ## Preview and apply
 

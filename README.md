@@ -31,8 +31,8 @@ The first development milestone includes:
 - `localis audit [path]` — deterministic project and security scan;
 - `localis doctor` — environment readiness checks for Node.js, Git, and Ollama;
 - `localis privacy [path]` — exact outbound manifest, redaction counts, and payload hash;
-- `localis models` — locally installed Ollama model discovery;
-- `localis ask <question> [path]` — project-aware answers through local Ollama;
+- `localis models` — automatic model discovery from the selected provider;
+- `localis ask <question> [path]` — project-aware answers through a local or explicitly connected API model;
 - `localis propose <task> [path]` — schema-constrained local AI change plan generation;
 - `localis fix <finding> [path]` — generate a narrowly scoped plan from an audit finding number or ID;
 - `localis test [path]` — discover and run tests across Node.js, Python, Rust, and Go projects;
@@ -64,8 +64,8 @@ node apps/cli/dist/index.js audit . --json
 ```
 
 Choose LM Studio instead of the default Ollama provider by starting its local
-server and passing `--provider lmstudio`. Both providers are restricted to
-loopback endpoints.
+server and passing `--provider lmstudio`. Both local providers are restricted
+to loopback endpoints.
 
 ```bash
 node apps/cli/dist/index.js models --provider lmstudio
@@ -80,7 +80,27 @@ node apps/cli/dist/index.js ask "Explain the authentication flow" . \
   --file src --model qwen2.5-coder:7b
 ```
 
-Use `ask --dry-run` to inspect the manifest and payload hash without contacting Ollama. Localis only permits Ollama endpoints on `localhost`, `127.0.0.1`, or `::1`.
+Use `ask --dry-run` to inspect the manifest and payload hash without contacting
+any provider. Localis only permits Ollama and LM Studio endpoints on
+`localhost`, `127.0.0.1`, or `::1`.
+
+Connect any API that exposes the OpenAI-compatible `/models` and
+`/chat/completions` endpoints. Remote base URLs must use HTTPS, and the API key
+is read from an environment variable rather than a command-line argument:
+
+```powershell
+$env:OPENAI_API_KEY = "your-key"
+node apps/cli/dist/index.js models --provider openai-compatible `
+  --endpoint https://api.openai.com/v1 --api-key-env OPENAI_API_KEY
+node apps/cli/dist/index.js ask "Review this project" . `
+  --provider openai-compatible --endpoint https://api.openai.com/v1 `
+  --api-key-env OPENAI_API_KEY
+```
+
+The desktop app provides the same flow under **Settings → Providers** with
+presets for OpenAI, OpenRouter, Ollama, LM Studio, and a custom compatible API.
+It loads the provider's model catalog automatically and keeps API keys only in
+memory for the current app session.
 
 Generate, preview, and apply a validated change plan:
 
@@ -133,6 +153,8 @@ docs/
 - [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
 - [x] Local Ollama generation of schema-constrained change plans
 - [x] LM Studio model adapter
+- [x] OpenAI-compatible API adapter with automatic model discovery
+- [x] Desktop provider settings and project-aware AI workspace
 - [x] One-click plan generation from individual audit findings
 - [x] Tauri desktop workspace for Windows, macOS, and Linux
 - [x] Test intelligence and release readiness checks
