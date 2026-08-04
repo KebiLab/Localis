@@ -88,20 +88,12 @@ a {
   height: 31px;
 }
 
-.logoHex {
-  fill: var(--ink);
+.logoFrame {
+  fill: var(--violet);
 }
 
 .logoLetter {
-  fill: none;
-  stroke: var(--surface);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2.6;
-}
-
-.logoNode {
-  fill: var(--mint);
+  fill: var(--ink);
 }
 
 .navLinks {

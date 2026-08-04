@@ -44,8 +44,9 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 
 .brand { display: flex; align-items: center; gap: 11px; padding: 0; border: 0; background: transparent; cursor: pointer; font-size: 22px; font-weight: 760; letter-spacing: -.04em; }
 .brand:hover span { color: var(--primary); }
-.brand svg { width: 32px; height: 32px; fill: var(--primary); }
-.brand .brand-letter { fill: none; stroke: white; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
+.brand svg { width: 32px; height: 32px; overflow: visible; fill: none; }
+.brand .brand-frame { fill: var(--primary); }
+.brand .brand-letter { fill: var(--ink); }
 
 .project-picker {
   min-width: 0;
