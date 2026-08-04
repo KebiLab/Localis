@@ -12,9 +12,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/league-gothic": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource-variable/roboto-condensed": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
     "next": "^16.3.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "simple-icons": "^16.28.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

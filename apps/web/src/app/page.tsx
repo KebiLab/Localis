@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import { siApple, siGithub, siLinux } from "simple-icons";
 
 const workflow = [
   {
@@ -38,6 +39,39 @@ function WorkflowIcon({ name }: { name: string }) {
     return <svg viewBox="0 0 64 52" aria-hidden="true"><path d="M4 4h56v38H30L19 50v-8H4V4Z" /><path d="m25 15-9 8 9 8M39 15l9 8-9 8" /></svg>;
   }
   return <svg viewBox="0 0 64 52" aria-hidden="true"><path d="M39 5c12-4 20-2 20-2s2 8-3 19L35 42 21 28 39 5Z" /><path d="m21 28-12 2-6 8 17 1M35 42l-2 8-9 1-3-12M20 43l-8 7" /></svg>;
+}
+
+function BrandIcon({ path, title }: { path: string; title: string }) {
+  return (
+    <svg className="railBrandIcon" viewBox="0 0 24 24" role="img" aria-label={title}>
+      <path d={path} />
+    </svg>
+  );
+}
+
+function WindowsIcon() {
+  return (
+    <svg className="railBrandIcon" viewBox="0 0 24 24" role="img" aria-label="Windows">
+      <path d="M2 3.4 10.7 2v9.2H2V3.4Zm9.8-1.6L22 0v11.2H11.8V1.8ZM2 12.4h8.7v9.2L2 20.2v-7.8Zm9.8 0H22V24l-10.2-1.8v-9.8Z" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg className="downloadIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19v2h16v-2" />
+    </svg>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg className="sunIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </svg>
+  );
 }
 
 function DesktopScreenshot() {
@@ -119,10 +153,11 @@ export default function Home() {
         <nav className="nav shell" aria-label="Primary navigation">
           <a href="#top" className="brandLink" aria-label="Localis home"><Logo /></a>
           <div className="navLinks">
-            <a href="#product">Product</a>
+            <a href="#product">Docs</a>
             <a href="#security">Security</a>
-            <a href="#workflow">How it works</a>
+            <a href="https://github.com/KebiLab/Localis/releases">Changelog</a>
             <a href="https://github.com/KebiLab/Localis">GitHub</a>
+            <span className="themeMark" aria-label="Light theme"><SunIcon /></span>
           </div>
         </nav>
       </header>
@@ -148,11 +183,11 @@ export default function Home() {
 
       <section className="actionRail" aria-label="Download and platforms">
         <div className="shell actionRailInner">
-          <a className="downloadButton" href="https://github.com/KebiLab/Localis/releases">↓ <span>Download Localis</span></a>
-          <a href="https://github.com/KebiLab/Localis">◉ <span>GitHub</span></a>
-          <span>⊞ <b>Windows</b></span>
-          <span>● <b>macOS</b></span>
-          <span>♙ <b>Linux</b></span>
+          <a className="downloadButton" href="https://github.com/KebiLab/Localis/releases"><DownloadIcon /><span>Download Localis</span></a>
+          <a href="https://github.com/KebiLab/Localis"><BrandIcon path={siGithub.path} title="GitHub" /><span>GitHub</span></a>
+          <span><WindowsIcon /><b>Windows</b></span>
+          <span><BrandIcon path={siApple.path} title="Apple" /><b>macOS</b></span>
+          <span><BrandIcon path={siLinux.path} title="Linux" /><b>Linux</b></span>
           <span>Made by KebiLab</span>
         </div>
       </section>
