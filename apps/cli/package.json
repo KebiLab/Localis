@@ -1,15 +1,27 @@
 {
   "name": "@localis/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Localis command-line interface.",
   "license": "Apache-2.0",
   "author": "KebiLab",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KebiLab/Localis.git",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://localis.dev",
+  "bugs": "https://github.com/KebiLab/Localis/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "bin": {
     "localis": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.test.*"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -20,7 +32,7 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
-    "@localis/core": "*"
+    "@localis/core": "0.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

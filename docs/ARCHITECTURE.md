@@ -3,54 +3,65 @@
 Localis separates product interfaces from the code that reads and evaluates a repository.
 
 ```text
-CLI ───────────────┐
-Desktop (Tauri) ───┼── Localis Core ── Project files
-CI integration ────┘       │
-                            ├── Deterministic rules
-                            ├── Privacy Gateway
-                            └── Explicit model adapters
+CLI -----------------+
+Desktop (Tauri) -----+--- Localis Core --- Project files
+CI ------------------+          |
+                                +-- Deterministic rules
+                                +-- Privacy Gateway
+                                +-- Local model providers
+                                +-- Transactional changes
+                                +-- Verification and ship gate
 ```
 
-## Packages
+## `@localis/core`
 
-### `@localis/core`
+The core owns project discovery, bounded file reads, deterministic audit rules,
+redaction, change transactions, local model adapters, and verification. It does
+not make an external network request unless the caller selects a provider
+capability whose contract explicitly describes that request.
 
-Owns project discovery, safe file reads, deterministic audit rules, redaction, scoring, and environment diagnostics. It must not make an external network request unless the caller invokes a capability whose name and contract clearly describe that request.
+AI work is split into explicit boundaries:
 
-The core now exposes two separate AI contracts:
+- `prepareProjectContext()` selects, bounds, redacts, and hashes context without network access;
+- `generateWithLocalModel()` uses either Ollama or LM Studio and rejects non-loopback endpoints;
+- `proposeChangePlanWithLocalModel()` validates structured model output as untrusted input;
+- `proposeFindingFixWithLocalModel()` limits context to one current audit finding and file.
 
-- `prepareProjectContext()` performs bounded selection, redaction, manifest creation, and payload hashing without network access;
-- `generateWithOllama()` accepts only loopback HTTP endpoints and sends a non-streaming request to the local Ollama API.
-- `proposeChangePlanWithOllama()` requests schema-constrained output at temperature `0`, validates it as untrusted input, and computes source hashes locally.
+The model never receives a file-write capability. Change plans use relative
+paths, expected SHA-256 hashes, bounded complete file contents, and a deliberate
+preview/apply split. Apply creates a private backup; undo verifies current and
+backup hashes before restoration.
 
-The model never receives a file-write capability. The change engine accepts typed JSON plans rather than free-form instructions, validates paths and size limits, checks the expected SHA-256 of every source file, previews a bounded unified diff, and requires explicit confirmation before writing. Applied transactions are recorded under `.localis/backups`; undo verifies both current-file and backup hashes before restoring anything.
+Verification discovers allowlisted commands from project manifests. Commands
+run with argument arrays and `shell: false`. Captured output is bounded and
+redacted before it enters a report.
 
-### `@localis/cli`
+## Interfaces
 
-Turns core results into human-readable or JSON output. Exit codes are stable automation contracts:
+### CLI
 
-- `0` — command completed and no critical finding was detected;
-- `1` — command failed or usage is invalid;
-- `2` — audit completed with at least one critical finding.
+The CLI renders the same reports for humans and automation. Exit codes are:
 
-Human-readable output strips terminal control sequences from repository paths, provider errors, model responses, and diff content before rendering.
-
-### `@localis/web`
-
-The public product website and documentation entry point. It runs on Vercel and does not receive or analyze users' source code.
+- `0`: completed and ready;
+- `1`: invalid usage, execution error, or failed test selection;
+- `2`: audit or ship completed with release-blocking findings.
 
 ### Desktop
 
-The desktop shell will use Tauri 2 with React and TypeScript. It will call the same core contracts as the CLI, surface exact diffs, and make the local/cloud privacy boundary visible before each model request.
+The Tauri 2 shell exposes only `audit`, `privacy`, `ship`, and `doctor` through
+its Rust bridge. It canonicalizes the selected project directory, invokes the
+CLI without a shell, caps report size, and parses JSON before returning data to
+the WebView. Its capability file grants only core defaults and native folder
+selection.
 
-## Privacy boundary
+### Web
 
-Local scanning and redaction are always available offline. A model provider is an optional adapter. Before any cloud adapter receives content, the planned Privacy Gateway will:
+The Next.js site is a public product surface for Vercel. It never receives or
+analyzes source code.
 
-1. select only relevant context;
-2. detect and redact secrets and personal data;
-3. show the exact outbound payload;
-4. require explicit approval;
-5. record a local, secret-free audit event.
+## Trust boundaries
 
-The first four steps are implemented for the CLI context workflow. Local audit-event persistence remains planned.
+Project source, model output, plan files, subprocess output, and stored backup
+metadata are all treated as untrusted. Network access is opt-in and limited to
+local model endpoints. Filesystem writes require an explicit confirmed change
+plan and are conflict checked.

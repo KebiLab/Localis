@@ -11,7 +11,7 @@ test("help introduces Localis and its core commands", async () => {
   const result = await runCli(["help"]);
 
   assert.equal(result.exitCode, 0);
-  assert.match(result.stdout ?? "", /Localis 0\.1\.0/);
+  assert.match(result.stdout ?? "", /Localis 0\.2\.0/);
   assert.match(result.stdout ?? "", /audit \[path\]/);
   assert.match(result.stdout ?? "", /propose <task>/);
   assert.match(result.stdout ?? "", /Made by KebiLab/);

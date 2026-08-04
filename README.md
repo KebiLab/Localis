@@ -136,7 +136,10 @@ docs/
 - [x] One-click plan generation from individual audit findings
 - [x] Tauri desktop workspace for Windows, macOS, and Linux
 - [x] Test intelligence and release readiness checks
-- [ ] VS Code, JetBrains, and CI integrations
+
+Editor integrations are planned after the `0.2.0` CLI and desktop release; CI
+automation is available today through `localis ship --json` and the repository
+workflows.
 
 ## Security
 

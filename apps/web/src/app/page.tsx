@@ -21,14 +21,14 @@ const capabilities = [
   {
     label: "Ship",
     title: "One calm release check.",
-    body: "Tests, security findings, migrations, release notes, and commits come together in one readable report.",
+    body: "Audit findings, tests, types, lint, and production builds come together in one deterministic release decision.",
   },
 ];
 
 const workflow = [
   ["Scan", "Localis maps the repository and runs deterministic checks without a network connection."],
   ["Understand", "Findings explain what happened, where it happened, and why it matters."],
-  ["Control", "You decide whether a model is used and approve every proposed change."],
+  ["Ship", "Localis runs the project\u2019s declared checks and returns one release decision."],
 ];
 
 export default function Home() {
@@ -75,7 +75,7 @@ export default function Home() {
           <CopyCommand />
           <p className="earlyNote">
             <span aria-hidden="true" />
-            Early development · deterministic audit available now
+            CLI + Desktop · Ollama + LM Studio · safe apply and undo
           </p>
         </div>
 
@@ -142,8 +142,8 @@ export default function Home() {
         </div>
         <div className="closingAction">
           <p>
-            Localis is at the beginning. Follow the repository, inspect the
-            code, and help shape the privacy contract.
+            Run the audit, inspect the privacy contract, and help shape a
+            developer workspace that keeps control visible.
           </p>
           <a className="button buttonPrimary" href="https://github.com/KebiLab/Localis">
             Join the project
