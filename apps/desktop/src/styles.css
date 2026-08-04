@@ -12,6 +12,7 @@
   --line: #dce1e6;
   --line-strong: #cbd2d9;
   --primary: #4d4bb8;
+  --primary-rgb: 77, 75, 184;
   --primary-soft: #eeedfb;
   --green: #31785a;
   --green-soft: #eaf4ee;
@@ -46,8 +47,9 @@
   --surface-soft: #252526;
   --line: #303033;
   --line-strong: #454549;
-  --primary: #9293f7;
-  --primary-soft: #2b2b46;
+  --primary: #78a9e8;
+  --primary-rgb: 120, 169, 232;
+  --primary-soft: #203247;
   --green: #70c99b;
   --green-soft: #1d3027;
   --amber: #d7a15d;
@@ -59,8 +61,8 @@
   --action-hover: #ffffff;
   --on-action: #1f1f1f;
   --on-primary: #ffffff;
-  --primary-hover: #7e7fe6;
-  --primary-border: #4a4a72;
+  --primary-hover: #6398da;
+  --primary-border: #385b7d;
   --panel-soft: #1c2923;
   --idle-soft: #2d2d2f;
   --idle-dot: #7f7f85;
@@ -75,7 +77,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 900px; min-height: 650px; overflow: hidden; background: var(--canvas); }
 button { color: inherit; font: inherit; }
-button:focus-visible { outline: 3px solid rgba(77, 75, 184, .28); outline-offset: 2px; }
+button:focus-visible { outline: 3px solid rgba(var(--primary-rgb), .28); outline-offset: 2px; }
 code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 
 .app-shell {
@@ -160,7 +162,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 }
 .local-status i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(73, 162, 120, .12); }
 .local-status.cloud { border-color: var(--primary-border); background: var(--primary-soft); color: var(--primary); }
-.local-status.cloud i { background: var(--primary); box-shadow: 0 0 0 4px rgba(77, 75, 184, .11); }
+.local-status.cloud i { background: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .11); }
 
 .settings-button {
   width: 42px;
@@ -393,7 +395,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .app-preferences label { display: grid; grid-template-columns: minmax(0, 1fr) 112px; align-items: center; gap: 10px; }
 .app-preferences label > span { font-size: 11px; font-weight: 620; }
 .app-preferences select { width: 100%; height: 34px; padding: 0 28px 0 10px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: var(--surface-soft); color: var(--ink); font: 580 10px/1 "Manrope Variable", sans-serif; cursor: pointer; }
-.app-preferences select:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(77, 75, 184, .12); }
+.app-preferences select:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
 
 .provider-settings { display: flex; flex-direction: column; padding: 24px; }
 .provider-settings-head,
@@ -434,7 +436,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .provider-form input::placeholder,
 .model-catalog-head input::placeholder { color: var(--placeholder); font-weight: 500; opacity: 1; }
 .provider-form input:focus,
-.model-catalog-head input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(77, 75, 184, .09); }
+.model-catalog-head input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .09); }
 .provider-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 2px; }
 .connect-button,
 .disconnect-button,
@@ -525,7 +527,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .answer-empty strong { color: var(--ink); font-size: 13px; }
 .answer-empty span { max-width: 390px; margin-top: 7px; font-size: 10px; line-height: 1.5; }
 .prompt-box { padding: 12px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); }
-.prompt-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(77, 75, 184, .08); }
+.prompt-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .08); }
 .prompt-box textarea { width: 100%; min-height: 72px; resize: none; border: 0; outline: 0; background: transparent; color: var(--ink); font: 12px/1.55 "Manrope Variable", sans-serif; }
 .prompt-box > div { display: flex; align-items: center; justify-content: space-between; }
 .prompt-box > div > span { color: #9ba4ad; font-family: "JetBrains Mono Variable", monospace; font-size: 8px; }
