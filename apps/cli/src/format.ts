@@ -9,6 +9,8 @@ import type {
   OllamaGenerateResult,
   LocalModel,
   LocalModelProvider,
+  ShipReport,
+  VerificationReport,
 } from "@localis/core";
 
 const ANSI = {
@@ -278,6 +280,48 @@ export function formatChangeHistory(sessions: ChangeSessionManifest[]): string {
         `${paint(session.state.toUpperCase().padEnd(11), stateColor)}  ${terminalSafe(session.id)}  ${session.entries.length} files  ${terminalSafe(session.planId)}`,
       );
     }
+  }
+  output.push("");
+  return output.join("\n");
+}
+
+export function formatVerification(report: VerificationReport, discoveryOnly = false): string {
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint(discoveryOnly ? "CHECK DISCOVERY" : "TEST INTELLIGENCE", "dim")}`,
+    paint("─".repeat(64), "dim"),
+    `Project     ${terminalSafe(report.root)}`,
+  ];
+  if (discoveryOnly) {
+    if (report.discovered.length === 0) output.push("No supported project checks were discovered.");
+    for (const check of report.discovered) {
+      output.push(`  ${paint(check.kind.toUpperCase().padEnd(9), "violet")} ${terminalSafe(check.id)}  ${terminalSafe([check.command, ...check.args].join(" "))}`);
+    }
+  } else {
+    if (report.results.length === 0) output.push(paint("No matching checks were discovered.", "yellow"));
+    for (const result of report.results) {
+      output.push(`${result.status === "passed" ? paint("PASS", "green") : paint("FAIL", "red")}  ${terminalSafe(result.id)}  ${result.durationMs} ms`);
+      if (result.status === "failed" && result.stderr.trim()) output.push(`      ${terminalSafe(result.stderr.trim())}`);
+    }
+    output.push("", report.ready ? paint("Selected checks passed.", "green") : paint("Verification is not ready.", "red"));
+  }
+  output.push("");
+  return output.join("\n");
+}
+
+export function formatShip(report: ShipReport): string {
+  const output = [
+    "",
+    `${paint("LOCALIS", "violet")}  ${paint("SHIP CHECK", "dim")}`,
+    paint("─".repeat(64), "dim"),
+    `Project     ${terminalSafe(report.root)}`,
+    `Audit       ${report.audit.scores.overall}/100  ${report.audit.findings.length} findings`,
+    `Checks      ${report.verification.results.filter((result) => result.status === "passed").length}/${report.verification.results.length} passed`,
+    `Decision    ${report.ready ? paint("READY TO SHIP", "green") : paint("BLOCKED", "red")}`,
+  ];
+  if (report.blockers.length) {
+    output.push("", paint("Release blockers", "bold"));
+    for (const blocker of report.blockers) output.push(`  ${paint("•", "red")} ${terminalSafe(blocker)}`);
   }
   output.push("");
   return output.join("\n");

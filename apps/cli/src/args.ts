@@ -1,5 +1,6 @@
 const VALUE_OPTIONS = new Set([
   "--endpoint",
+  "--check",
   "--file",
   "--max-files",
   "--model",

@@ -35,6 +35,8 @@ The first development milestone includes:
 - `localis ask <question> [path]` — project-aware answers through local Ollama;
 - `localis propose <task> [path]` — schema-constrained local AI change plan generation;
 - `localis fix <finding> [path]` — generate a narrowly scoped plan from an audit finding number or ID;
+- `localis test [path]` — discover and run tests across Node.js, Python, Rust, and Go projects;
+- `localis ship [path]` — release gate combining audit, tests, types, lint, and build;
 - `localis apply <plan.json> [path]` — hash-checked diff preview and confirmed transaction;
 - `localis history` / `localis undo` — local backup history and conflict-safe restoration;
 - `--json` output for automation and future desktop integration;
@@ -99,6 +101,14 @@ node apps/cli/dist/index.js fix 1 . --out localis-fix.json
 node apps/cli/dist/index.js apply localis-fix.json . --yes
 ```
 
+Run discovered tests or the complete release gate:
+
+```bash
+node apps/cli/dist/index.js test . --dry-run
+node apps/cli/dist/index.js test .
+node apps/cli/dist/index.js ship .
+```
+
 `propose` cannot change source files: it turns schema-constrained model output into a hash-checked plan. `apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
 
 ## Workspace
@@ -125,7 +135,7 @@ docs/
 - [x] LM Studio model adapter
 - [x] One-click plan generation from individual audit findings
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
-- [ ] Test intelligence and release readiness checks
+- [x] Test intelligence and release readiness checks
 - [ ] VS Code, JetBrains, and CI integrations
 
 ## Security

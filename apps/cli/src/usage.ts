@@ -16,6 +16,8 @@ Commands:
   ask <question>   Ask a local model about redacted project context
   propose <task>   Generate a validated plan with a local model
   fix <finding>    Generate a plan for an audit finding number or ID
+  test [path]      Discover and run project tests
+  ship [path]      Gate a release on audit, tests, types, lint, and build
   apply <plan>     Preview a change plan; add --yes to apply it
   history [path]   List local change and backup sessions
   undo [session]   Restore an applied session; requires --yes
@@ -26,6 +28,7 @@ Options:
   --file <path>    Include only this file or directory (repeatable)
   --model <name>   Select a model from the active provider
   --provider <id>  Select ollama (default) or lmstudio
+  --check <id>     Run a discovered verification check (repeatable)
   --endpoint <url> Override the selected loopback provider endpoint
   --out <file>     Save a generated change plan without overwriting
   --max-files <n>  Limit context files (default: 24)
@@ -43,6 +46,8 @@ Examples:
   localis ask "Explain the authentication flow" . --model qwen2.5-coder:7b
   localis propose "Add input validation" . --file src --out localis-plan.json
   localis fix 1 . --out localis-fix.json
+  localis test .
+  localis ship . --json
   localis apply ./localis-plan.json .
   localis apply ./localis-plan.json . --yes
   localis undo latest . --yes

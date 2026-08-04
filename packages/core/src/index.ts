@@ -87,3 +87,17 @@ export type {
   ProjectFile,
   ProjectScan,
 } from "./types.js";
+export {
+  discoverVerificationChecks,
+  runCommand,
+  runShipCheck,
+  runVerification,
+  type CommandResult,
+  type CommandRunner,
+  type RunVerificationOptions,
+  type ShipReport,
+  type VerificationCheck,
+  type VerificationKind,
+  type VerificationReport,
+  type VerificationResult,
+} from "./verification.js";

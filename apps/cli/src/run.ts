@@ -14,6 +14,8 @@ import {
   proposeFindingFixWithLocalModel,
   runAudit,
   runDoctor,
+  runShipCheck,
+  runVerification,
   undoChangeSession,
 } from "@localis/core";
 import { promises as fs } from "node:fs";
@@ -32,6 +34,8 @@ import {
   formatDoctor,
   formatModels,
   formatPrivacyPreview,
+  formatShip,
+  formatVerification,
   terminalSafe,
 } from "./format.js";
 import { usage, VERSION } from "./usage.js";
@@ -76,6 +80,42 @@ export async function runCli(args: string[]): Promise<CliResult> {
       exitCode: report.ready ? 0 : 1,
       stdout: json ? JSON.stringify(report, null, 2) : formatDoctor(report),
     };
+  }
+
+  if (command === "test") {
+    const root = positional[1] ?? ".";
+    try {
+      const ids = optionValues(parsed, "--check");
+      if (parsed.flags.has("--dry-run")) {
+        const report = await runVerification(root, { ids: ["__discover_only__"] });
+        return {
+          exitCode: report.discovered.some((check) => check.kind === "test") ? 0 : 1,
+          stdout: json
+            ? JSON.stringify({ mode: "discovery", checks: report.discovered }, null, 2)
+            : formatVerification(report, true),
+        };
+      }
+      const report = await runVerification(root, ids.length ? { ids } : { kinds: ["test"] });
+      return {
+        exitCode: report.ready ? 0 : 1,
+        stdout: json ? JSON.stringify(report, null, 2) : formatVerification(report),
+      };
+    } catch (error) {
+      return commandError("TEST_FAILED", error, json);
+    }
+  }
+
+  if (command === "ship") {
+    const root = positional[1] ?? ".";
+    try {
+      const report = await runShipCheck(root);
+      return {
+        exitCode: report.ready ? 0 : 2,
+        stdout: json ? JSON.stringify(report, null, 2) : formatShip(report),
+      };
+    } catch (error) {
+      return commandError("SHIP_FAILED", error, json);
+    }
   }
 
   if (command === "privacy") {

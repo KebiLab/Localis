@@ -133,6 +133,19 @@ test("context file limits reject unsafe values", async () => {
   assert.match(result.stderr ?? "", /between 1 and 200/);
 });
 
+test("test dry-run discovers checks without executing project scripts", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-tests-"));
+  try {
+    await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ scripts: { test: "exit 99" } }));
+    const result = await runCli(["test", root, "--dry-run", "--json"]);
+    const output = JSON.parse(result.stdout ?? "{}") as { checks?: Array<{ id?: string }> };
+    assert.equal(result.exitCode, 0);
+    assert.deepEqual(output.checks?.map((check) => check.id), ["node:test"]);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test("apply previews by default, writes with confirmation, and supports undo", async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-apply-"));
 
