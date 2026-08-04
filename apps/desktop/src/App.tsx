@@ -109,6 +109,10 @@ function EmptyState({ operation, onChoose }: { operation: Operation; onChoose: (
           <FolderIcon />
           Choose project
         </button>
+        <div className="maker-credit">
+          <span>Made by</span>
+          <strong>KebiLab</strong>
+        </div>
       </div>
       <div className="empty-preview card" aria-hidden="true">
         <div className="preview-head"><i /><i /><i /></div>

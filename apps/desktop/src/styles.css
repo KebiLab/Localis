@@ -236,6 +236,8 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .secondary-button { background: var(--ink); }
 .secondary-button:hover { background: #28323f; }
 .secondary-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.maker-credit { display: flex; align-items: center; gap: 5px; margin-top: 22px; color: #8a949f; font-size: 11px; letter-spacing: .01em; }
+.maker-credit strong { color: #68727f; font-weight: 720; }
 
 .empty-preview { position: relative; min-height: 420px; padding: 25px; overflow: hidden; }
 .preview-head { display: flex; gap: 6px; }
