@@ -118,8 +118,8 @@ function safeEvidence(value: string, rule: Rule): string {
   return value.trim().slice(0, 160);
 }
 
-export function analyzeFile(file: ProjectFile, source: string): AuditFinding[] {
-  const findings: AuditFinding[] = [];
+export function analyzeFile(file: ProjectFile, source: string): Array<Omit<AuditFinding, "id">> {
+  const findings: Array<Omit<AuditFinding, "id">> = [];
   const sourceLines = source.split(/\r?\n/);
 
   for (const rule of RULES) {

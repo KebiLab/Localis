@@ -4,6 +4,7 @@
 
 - Added a loopback-only LM Studio adapter and a unified local model provider layer.
 - Added `--provider ollama|lmstudio` to `models`, `ask`, and `propose`.
+- Added stable audit finding IDs and `localis fix` for narrowly scoped fix plans.
 
 All notable changes to Localis will be documented here.
 

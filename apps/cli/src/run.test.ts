@@ -106,6 +106,26 @@ test("propose dry-run previews context without requiring Ollama", async () => {
   }
 });
 
+test("fix dry-run selects one current audit finding without requiring a model", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-cli-fix-dry-"));
+  try {
+    await fs.writeFile(path.join(root, "unsafe.ts"), "export const run = (value: string) => eval(value);\n"); // localis-ignore security.dynamic-eval
+    await fs.writeFile(path.join(root, "safe.ts"), "export const safe = true;\n");
+    const result = await runCli(["fix", "1", root, "--dry-run", "--json"]);
+    const output = JSON.parse(result.stdout ?? "{}") as {
+      mode?: string;
+      finding?: { ruleId?: string };
+      preview?: { files?: Array<{ path?: string }> };
+    };
+    assert.equal(result.exitCode, 0);
+    assert.equal(output.mode, "finding-preview");
+    assert.equal(output.finding?.ruleId, "security.dynamic-eval");
+    assert.deepEqual(output.preview?.files?.map((file) => file.path), ["unsafe.ts"]);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
 test("context file limits reject unsafe values", async () => {
   const result = await runCli(["privacy", ".", "--max-files", "0"]);
 

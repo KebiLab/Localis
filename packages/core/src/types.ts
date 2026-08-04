@@ -21,6 +21,7 @@ export interface ProjectScan {
 }
 
 export interface AuditFinding {
+  id: string;
   ruleId: string;
   title: string;
   description: string;

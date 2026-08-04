@@ -15,6 +15,7 @@ Commands:
   models           List models from Ollama or LM Studio
   ask <question>   Ask a local model about redacted project context
   propose <task>   Generate a validated plan with a local model
+  fix <finding>    Generate a plan for an audit finding number or ID
   apply <plan>     Preview a change plan; add --yes to apply it
   history [path]   List local change and backup sessions
   undo [session]   Restore an applied session; requires --yes
@@ -41,6 +42,7 @@ Examples:
   localis privacy . --file src --file package.json
   localis ask "Explain the authentication flow" . --model qwen2.5-coder:7b
   localis propose "Add input validation" . --file src --out localis-plan.json
+  localis fix 1 . --out localis-fix.json
   localis apply ./localis-plan.json .
   localis apply ./localis-plan.json . --yes
   localis undo latest . --yes

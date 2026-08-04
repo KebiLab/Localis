@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 import { analyzeFile } from "./rules.js";
@@ -37,6 +38,11 @@ const SEVERITY_ORDER: Record<FindingSeverity, number> = {
   medium: 2,
   low: 3,
 };
+
+function findingId(finding: Omit<AuditFinding, "id">): string {
+  const fingerprint = [finding.ruleId, finding.file, finding.line, finding.column].join("\0");
+  return `LCL-${createHash("sha256").update(fingerprint).digest("hex").slice(0, 12)}`;
+}
 
 function clampScore(score: number): number {
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -89,7 +95,12 @@ export async function runAudit(
       skippedFiles += 1;
       continue;
     }
-    findings.push(...analyzeFile(file, source));
+    findings.push(
+      ...analyzeFile(file, source).map((finding) => ({
+        ...finding,
+        id: findingId(finding),
+      })),
+    );
   }
 
   findings.sort((left, right) => {

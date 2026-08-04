@@ -11,6 +11,7 @@ import {
   prepareProjectContext,
   previewChangePlan,
   proposeChangePlanWithLocalModel,
+  proposeFindingFixWithLocalModel,
   runAudit,
   runDoctor,
   undoChangeSession,
@@ -248,6 +249,57 @@ export async function runCli(args: string[]): Promise<CliResult> {
     }
   }
 
+  if (command === "fix") {
+    const selector = positional[1];
+    const root = positional[2] ?? ".";
+    if (!selector) {
+      return { exitCode: 1, stderr: "The fix command requires a finding number or ID from localis audit." };
+    }
+    try {
+      const report = await runAudit(root);
+      const finding = selectFinding(report.findings, selector);
+      if (parsed.flags.has("--dry-run")) {
+        const prepared = await prepareProjectContext({ root, include: [finding.file] });
+        return {
+          exitCode: 0,
+          stdout: json
+            ? JSON.stringify({ mode: "finding-preview", finding, preview: prepared.preview }, null, 2)
+            : `${formatPrivacyPreview(prepared.preview)}Selected ${finding.id}: ${terminalSafe(finding.title)}\n`,
+        };
+      }
+
+      const provider = selectedProvider(parsed);
+      const endpoint = selectedEndpoint(parsed, provider);
+      let model = optionValue(parsed, "--model") ?? selectedModel(provider);
+      if (!model) model = (await listLocalModels({ provider, endpoint }))[0]?.name;
+      if (!model) throw new Error(`No model is loaded in ${provider === "ollama" ? "Ollama" : "LM Studio"}.`);
+
+      const proposal = await proposeFindingFixWithLocalModel({
+        root,
+        finding,
+        model,
+        provider,
+        endpoint,
+      });
+      const out = optionValue(parsed, "--out");
+      if (out) await writeNewPlanFile(out, proposal.plan);
+      return {
+        exitCode: 0,
+        stdout: json
+          ? JSON.stringify({ mode: "finding-fix", finding, savedTo: out, ...proposal }, null, 2)
+          : [
+              `Selected ${finding.id}: ${terminalSafe(finding.title)}\n`,
+              formatChangePreview(proposal.preview),
+              out
+                ? `Plan saved to ${terminalSafe(out)}. Review it, then run localis apply.\n`
+                : `Plan JSON:\n${JSON.stringify(proposal.plan, null, 2)}\n`,
+            ].join(""),
+      };
+    } catch (error) {
+      return commandError("FIX_FAILED", error, json);
+    }
+  }
+
   if (command === "apply") {
     const planPath = positional[1];
     const root = positional[2] ?? ".";
@@ -387,6 +439,19 @@ function selectedModel(provider: "ollama" | "lmstudio") {
   return provider === "ollama"
     ? process.env.LOCALIS_OLLAMA_MODEL
     : process.env.LOCALIS_LMSTUDIO_MODEL;
+}
+
+function selectFinding(findings: import("@localis/core").AuditFinding[], selector: string) {
+  if (/^\d+$/.test(selector)) {
+    const finding = findings[Number.parseInt(selector, 10) - 1];
+    if (finding) return finding;
+  } else {
+    const normalized = selector.toLowerCase();
+    const matches = findings.filter((finding) => finding.id.toLowerCase().startsWith(normalized));
+    if (matches.length === 1) return matches[0]!;
+    if (matches.length > 1) throw new Error(`Finding ID prefix is ambiguous: ${selector}`);
+  }
+  throw new Error(`Finding not found: ${selector}. Run localis audit to list current findings.`);
 }
 
 async function writeNewPlanFile(planPath: string, plan: unknown): Promise<void> {

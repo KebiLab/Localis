@@ -58,6 +58,8 @@ export {
   CHANGE_PROPOSAL_SCHEMA,
   ChangeProposalError,
   proposeChangePlanWithLocalModel,
+  proposeFindingFixWithLocalModel,
+  type ProposeFindingFixOptions,
   proposeChangePlanWithOllama,
   type ProposeChangePlanOptions,
   type ProposedChangePlan,

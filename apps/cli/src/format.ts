@@ -48,9 +48,10 @@ function severityLabel(severity: FindingSeverity): string {
   return paint(severity.toUpperCase().padEnd(8), color);
 }
 
-function formatFinding(finding: AuditFinding): string {
+function formatFinding(finding: AuditFinding, index: number): string {
   return [
-    `  ${severityLabel(finding.severity)} ${paint(finding.title, "bold")}`,
+    `  ${paint(`[${index + 1}]`, "violet")} ${severityLabel(finding.severity)} ${paint(finding.title, "bold")}`,
+    `           ${finding.id}`,
     `           ${terminalSafe(finding.file)}:${finding.line}:${finding.column} · ${finding.ruleId}`,
     `           ${terminalSafe(finding.description)}`,
     `           ${paint(`Fix: ${finding.remediation}`, "dim")}`,

@@ -23,6 +23,7 @@ test("audit reports evidence without exposing a detected secret", async () => {
     );
 
     assert.ok(finding);
+    assert.match(finding.id, /^LCL-[a-f0-9]{12}$/);
     assert.equal(finding.line, 1);
     assert.match(finding.evidence, /^\[redacted \d+ characters\]$/);
     assert.ok(!JSON.stringify(report).includes("this-is-a-production-secret"));

@@ -34,6 +34,7 @@ The first development milestone includes:
 - `localis models` — locally installed Ollama model discovery;
 - `localis ask <question> [path]` — project-aware answers through local Ollama;
 - `localis propose <task> [path]` — schema-constrained local AI change plan generation;
+- `localis fix <finding> [path]` — generate a narrowly scoped plan from an audit finding number or ID;
 - `localis apply <plan.json> [path]` — hash-checked diff preview and confirmed transaction;
 - `localis history` / `localis undo` — local backup history and conflict-safe restoration;
 - `--json` output for automation and future desktop integration;
@@ -90,6 +91,14 @@ node apps/cli/dist/index.js history .
 node apps/cli/dist/index.js undo latest . --yes
 ```
 
+Turn an individual finding into a reviewable plan:
+
+```bash
+node apps/cli/dist/index.js audit .
+node apps/cli/dist/index.js fix 1 . --out localis-fix.json
+node apps/cli/dist/index.js apply localis-fix.json . --yes
+```
+
 `propose` cannot change source files: it turns schema-constrained model output into a hash-checked plan. `apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
 
 ## Workspace
@@ -114,7 +123,7 @@ docs/
 - [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
 - [x] Local Ollama generation of schema-constrained change plans
 - [x] LM Studio model adapter
-- [ ] One-click plan generation from individual audit findings
+- [x] One-click plan generation from individual audit findings
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
 - [ ] Test intelligence and release readiness checks
 - [ ] VS Code, JetBrains, and CI integrations
