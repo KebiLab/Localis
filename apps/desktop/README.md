@@ -19,6 +19,8 @@ The Settings screen connects Ollama, LM Studio, OpenAI, OpenRouter, or a custom
 OpenAI-compatible API and loads its model catalog from `/models`. Provider and
 model preferences are stored locally, but API keys remain only in the Rust
 process memory for the current session and clear when Localis closes.
+The same screen provides persistent English/Russian language selection and
+system, light, or dark appearance modes.
 
 The Rust bridge only accepts allowlisted report and AI operations. It invokes
 the built Localis CLI with an argument array, never a shell command. API keys

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type {
   AskResponse,
@@ -14,17 +14,15 @@ import type {
   ShipReport,
   WorkspaceReport,
 } from "./types";
+import { UI_COPY, type Language, type ThemePreference, type UiCopy } from "./i18n";
 
-const operations: Array<{ id: Operation; label: string; description: string }> = [
-  { id: "audit", label: "Audit", description: "Code and security findings" },
-  { id: "privacy", label: "Privacy", description: "Review the outbound boundary" },
-  { id: "ship", label: "Ship", description: "Run every release check" },
-];
+const OPERATION_IDS: Operation[] = ["audit", "privacy", "ship"];
 
 type WorkspaceView = Operation | "ai" | "settings";
 type ProviderPreset = ProviderSettings["preset"];
 
 const PROVIDER_STORAGE_KEY = "localis.provider.v1";
+const PREFERENCES_STORAGE_KEY = "localis.preferences.v1";
 const PROVIDER_PRESETS: Record<ProviderPreset, Omit<ProviderSettings, "model">> = {
   ollama: { preset: "ollama", connectionId: "ollama", provider: "ollama", label: "Ollama", endpoint: "http://127.0.0.1:11434" },
   lmstudio: { preset: "lmstudio", connectionId: "lmstudio", provider: "lmstudio", label: "LM Studio", endpoint: "http://127.0.0.1:1234" },
@@ -56,9 +54,21 @@ function saveProviderSettings(settings: ProviderSettings) {
   localStorage.setItem(PROVIDER_STORAGE_KEY, JSON.stringify(settings));
 }
 
-function Logo({ onClick }: { onClick: () => void }) {
+function loadPreferences(): { language: Language; theme: ThemePreference } {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY) ?? "{}") as { language?: unknown; theme?: unknown };
+    return {
+      language: saved.language === "ru" ? "ru" : "en",
+      theme: saved.theme === "light" || saved.theme === "dark" ? saved.theme : "system",
+    };
+  } catch {
+    return { language: "en", theme: "system" };
+  }
+}
+
+function Logo({ onClick, homeLabel }: { onClick: () => void; homeLabel: string }) {
   return (
-    <button className="brand" type="button" onClick={onClick} aria-label="Go to Audit home" title="Go to Audit home">
+    <button className="brand" type="button" onClick={onClick} aria-label={homeLabel} title={homeLabel}>
       <svg viewBox="0 0 40 40" aria-hidden="true">
         <path className="brand-frame" d="M20 3.5 35 12.2v6.3l-4.5-2.6v-1.1L20 8.7 9.5 14.8v12.4L20 33.3l10.5-6.1v-1.1l4.5-2.6v6.3l-15 8.7L5 29.8V12.2L20 3.5Z" />
         <path className="brand-letter" d="m13.4 15 5.1-3v11.5l8.2 4.8-4.7 2.7-8.6-5V15Z" />
@@ -93,19 +103,11 @@ function ChevronDownIcon() {
   );
 }
 
-function PlayIcon() {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <path d="m7 5 7 5-7 5V5Z" />
-    </svg>
-  );
-}
-
 function GearIcon() {
   return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <circle cx="10" cy="10" r="2.6" />
-      <path d="M8.7 2.4h2.6l.4 1.9c.5.2 1 .4 1.4.8l1.8-.6 1.3 2.2-1.4 1.3c.1.6.1 1.1 0 1.7l1.4 1.3-1.3 2.2-1.8-.6c-.4.4-.9.6-1.4.8l-.4 1.9H8.7l-.4-1.9c-.5-.2-1-.4-1.4-.8l-1.8.6L3.8 11l1.4-1.3a6 6 0 0 1 0-1.7L3.8 6.7l1.3-2.2 1.8.6c.4-.4.9-.6 1.4-.8l.4-1.9Z" />
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z" />
+      <circle cx="12" cy="12" r="3" />
     </svg>
   );
 }
@@ -115,14 +117,6 @@ function LockIcon() {
     <svg viewBox="0 0 20 20" aria-hidden="true">
       <rect x="4.5" y="8.5" width="11" height="8" rx="2" />
       <path d="M7 8.5V6.4a3 3 0 0 1 6 0v2.1M10 11.5v2" />
-    </svg>
-  );
-}
-
-function ConnectIcon() {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <path d="M7.7 12.3 12.3 7.7M6.2 9.8l-1.5 1.5a3.1 3.1 0 0 0 4.4 4.4l1.5-1.5M13.8 10.2l1.5-1.5a3.1 3.1 0 0 0-4.4-4.4L9.4 5.8" />
     </svg>
   );
 }
@@ -154,24 +148,8 @@ function ScoreRing({ score, label }: { score: number; label: string }) {
   );
 }
 
-function EmptyState({ operation, onChoose }: { operation: Operation; onChoose: () => void }) {
-  const copy = {
-    audit: {
-      eyebrow: "Project health",
-      title: "Start with the facts.",
-      body: "Choose a repository and run a local audit. Localis will show the evidence without changing your files.",
-    },
-    privacy: {
-      eyebrow: "Outbound boundary",
-      title: "See exactly what leaves.",
-      body: "Preview the files, redactions, and payload fingerprint before any local model request is prepared.",
-    },
-    ship: {
-      eyebrow: "Release readiness",
-      title: "Check before you ship.",
-      body: "Run the checks already declared by the repository and review every blocker in one place.",
-    },
-  }[operation];
+function EmptyState({ operation, onChoose, text }: { operation: Operation; onChoose: () => void; text: UiCopy }) {
+  const copy = text.empty[operation];
 
   return (
     <section className="empty-layout">
@@ -180,10 +158,10 @@ function EmptyState({ operation, onChoose }: { operation: Operation; onChoose: (
         <p>{copy.body}</p>
         <button className="secondary-button" onClick={onChoose}>
           <FolderIcon />
-          Choose project
+          {text.common.chooseProject}
         </button>
         <div className="maker-credit">
-          <span>Made by</span>
+          <span>{text.common.madeBy}</span>
           <strong>KebiLab</strong>
         </div>
       </div>
@@ -191,13 +169,13 @@ function EmptyState({ operation, onChoose }: { operation: Operation; onChoose: (
         <div className="preview-head"><i /><i /><i /></div>
         <div className="preview-score"><span>LOCAL</span><strong>—</strong></div>
         <div className="preview-lines"><i /><i /><i /><i /></div>
-        <div className="preview-proof"><StatusIcon /><span>No telemetry</span></div>
+        <div className="preview-proof"><StatusIcon /><span>{text.common.noTelemetry}</span></div>
       </div>
     </section>
   );
 }
 
-function FindingRow({ finding }: { finding: AuditFinding }) {
+function FindingRow({ finding, text }: { finding: AuditFinding; text: UiCopy }) {
   const [expanded, setExpanded] = useState(false);
   const tone = finding.severity === "critical" || finding.severity === "high" ? "warning" : "info";
 
@@ -215,7 +193,7 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
       {expanded && (
         <div className="finding-detail">
           <p>{finding.description}</p>
-          <strong>Suggested fix</strong>
+          <strong>{text.common.suggestedFix}</strong>
           <p>{finding.remediation}</p>
           <code>{finding.ruleId}</code>
         </div>
@@ -224,69 +202,69 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
   );
 }
 
-function AuditView({ report }: { report: AuditReport }) {
+function AuditView({ report, text }: { report: AuditReport; text: UiCopy }) {
   const passed = Math.max(0, report.scannedFiles - report.findings.length);
 
   return (
     <div className="dashboard-grid">
       <section className="overview card">
         <div className="section-heading">
-          <h1>Overall</h1>
-          <span className="quiet-label">{report.scannedFiles} files</span>
+          <h1>{text.audit.overall}</h1>
+          <span className="quiet-label">{report.scannedFiles} {text.audit.files}</span>
         </div>
-        <ScoreRing score={report.scores.overall} label={report.scores.overall >= 80 ? "Good" : "Needs review"} />
+        <ScoreRing score={report.scores.overall} label={report.scores.overall >= 80 ? text.audit.good : text.audit.needsReview} />
         <div className="metric-list">
-          <div><StatusIcon /><span>Passed checks</span><strong>{passed}</strong></div>
-          <div><StatusIcon tone="warning" /><span>High priority</span><strong>{report.summary.critical + report.summary.high}</strong></div>
-          <div><StatusIcon tone="info" /><span>Other findings</span><strong>{report.summary.medium + report.summary.low}</strong></div>
+          <div><StatusIcon /><span>{text.audit.passedChecks}</span><strong>{passed}</strong></div>
+          <div><StatusIcon tone="warning" /><span>{text.audit.highPriority}</span><strong>{report.summary.critical + report.summary.high}</strong></div>
+          <div><StatusIcon tone="info" /><span>{text.audit.otherFindings}</span><strong>{report.summary.medium + report.summary.low}</strong></div>
         </div>
       </section>
 
       <section className="results card">
         <div className="section-heading">
-          <h1>Recent findings</h1>
+          <h1>{text.audit.recentFindings}</h1>
           <span className="count-badge">{report.findings.length}</span>
         </div>
         <div className="result-list">
           {report.findings.length ? report.findings.map((finding) => (
-            <FindingRow key={finding.id} finding={finding} />
+            <FindingRow key={finding.id} finding={finding} text={text} />
           )) : (
             <div className="result-empty">
               <StatusIcon />
-              <strong>No deterministic issue found</strong>
-              <p>The repository passed every enabled audit rule.</p>
+              <strong>{text.audit.noIssue}</strong>
+              <p>{text.audit.passedRules}</p>
             </div>
           )}
         </div>
       </section>
 
       <section className="verification-strip card">
-        <div><StatusIcon /><span><strong>Local analysis complete</strong><small>No source file was changed</small></span></div>
+        <div><StatusIcon /><span><strong>{text.audit.complete}</strong><small>{text.audit.unchanged}</small></span></div>
         <code>{report.durationMs} ms</code>
       </section>
     </div>
   );
 }
 
-function PrivacyView({ report }: { report: PrivacyReport }) {
+function PrivacyView({ report, text }: { report: PrivacyReport; text: UiCopy }) {
   const preview = report.preview;
   const redactions = Object.values(preview.redactions).reduce((sum, value) => sum + value, 0);
 
   return (
     <div className="dashboard-grid">
       <section className="overview card privacy-overview">
-        <div className="section-heading"><h1>Local only</h1></div>
-        <div className="privacy-mark"><StatusIcon /><strong>Private by default</strong><span>Review before anything leaves your machine.</span></div>
+        <div className="section-heading"><h1>{text.privacy.localOnly}</h1></div>
+        <div className="privacy-mark"><StatusIcon /><strong>{text.privacy.privateDefault}</strong><span>{text.privacy.reviewFirst}</span></div>
         <div className="metric-list">
-          <div><span>Files</span><strong>{preview.files.length}</strong></div>
-          <div><span>Payload</span><strong>{(preview.outputBytes / 1024).toFixed(1)} KiB</strong></div>
-          <div><span>Redactions</span><strong>{redactions}</strong></div>
+          <div><span>{text.privacy.files}</span><strong>{preview.files.length}</strong></div>
+          <div><span>{text.privacy.payload}</span><strong>{(preview.outputBytes / 1024).toFixed(1)} KiB</strong></div>
+          <div><span>{text.privacy.redactions}</span><strong>{redactions}</strong></div>
         </div>
       </section>
 
       <section className="results card">
         <div className="section-heading">
-          <h1>Outbound manifest</h1>
+          <h1>{text.privacy.manifest}</h1>
           <span className="count-badge">{preview.files.length}</span>
         </div>
         <div className="manifest-list">
@@ -294,41 +272,41 @@ function PrivacyView({ report }: { report: PrivacyReport }) {
             <div key={file.path}>
               <StatusIcon tone={file.redactions ? "warning" : "good"} />
               <code>{file.path}</code>
-              <span>{file.redactions ? `${file.redactions} redacted` : "clean"}</span>
+              <span>{file.redactions ? `${file.redactions} ${text.privacy.redacted}` : text.privacy.clean}</span>
             </div>
           ))}
         </div>
       </section>
 
       <section className="verification-strip card">
-        <div><StatusIcon /><span><strong>Payload fingerprint</strong><small>Exact content identity</small></span></div>
+        <div><StatusIcon /><span><strong>{text.privacy.fingerprint}</strong><small>{text.privacy.identity}</small></span></div>
         <code>sha256:{preview.payloadSha256.slice(0, 20)}…</code>
       </section>
     </div>
   );
 }
 
-function ShipView({ report }: { report: ShipReport }) {
+function ShipView({ report, text }: { report: ShipReport; text: UiCopy }) {
   const passed = report.verification.results.filter((result) => result.status === "passed").length;
 
   return (
     <div className="dashboard-grid">
       <section className="overview card release-overview">
-        <div className="section-heading"><h1>{report.ready ? "Ready to ship" : "Ship blocked"}</h1></div>
+        <div className="section-heading"><h1>{report.ready ? text.ship.ready : text.ship.blocked}</h1></div>
         <div className={`release-mark ${report.ready ? "ready" : "blocked"}`}>
           <StatusIcon tone={report.ready ? "good" : "warning"} />
-          <p>{report.ready ? "Every discovered gate passed." : `${report.blockers.length} blocker(s) need attention.`}</p>
+          <p>{report.ready ? text.ship.passed : `${report.blockers.length} ${text.ship.blocker}`}</p>
         </div>
         <div className="metric-list">
-          <div><span>Passed checks</span><strong>{passed}</strong></div>
-          <div><span>Blocked checks</span><strong>{report.verification.results.length - passed}</strong></div>
-          <div><span>Audit score</span><strong>{report.audit.scores.overall}</strong></div>
+          <div><span>{text.ship.passedChecks}</span><strong>{passed}</strong></div>
+          <div><span>{text.ship.blockedChecks}</span><strong>{report.verification.results.length - passed}</strong></div>
+          <div><span>{text.ship.auditScore}</span><strong>{report.audit.scores.overall}</strong></div>
         </div>
       </section>
 
       <section className="results card">
         <div className="section-heading">
-          <h1>Release checks</h1>
+          <h1>{text.ship.releaseChecks}</h1>
           <span className="count-badge">{report.verification.results.length}</span>
         </div>
         <div className="check-list">
@@ -344,7 +322,7 @@ function ShipView({ report }: { report: ShipReport }) {
       </section>
 
       <section className="verification-strip card">
-        <div><StatusIcon tone={report.ready ? "good" : "warning"} /><span><strong>{report.ready ? "Release verified" : "Action required"}</strong><small>{report.ready ? "Safe to continue" : "Resolve blockers, then run Ship again"}</small></span></div>
+        <div><StatusIcon tone={report.ready ? "good" : "warning"} /><span><strong>{report.ready ? text.ship.verified : text.ship.action}</strong><small>{report.ready ? text.ship.safe : text.ship.resolve}</small></span></div>
         <code>{report.root}</code>
       </section>
     </div>
@@ -359,6 +337,9 @@ function SettingsView({
   connected,
   busy,
   error,
+  text,
+  language,
+  theme,
   onPreset,
   onLabel,
   onEndpoint,
@@ -368,6 +349,8 @@ function SettingsView({
   onConnect,
   onDisconnect,
   onOpenAI,
+  onLanguage,
+  onTheme,
 }: {
   settings: ProviderSettings;
   models: ProviderModel[];
@@ -376,6 +359,9 @@ function SettingsView({
   connected: boolean;
   busy: boolean;
   error: string;
+  text: UiCopy;
+  language: Language;
+  theme: ThemePreference;
   onPreset: (preset: ProviderPreset) => void;
   onLabel: (label: string) => void;
   onEndpoint: (endpoint: string) => void;
@@ -385,6 +371,8 @@ function SettingsView({
   onConnect: () => void;
   onDisconnect: () => void;
   onOpenAI: () => void;
+  onLanguage: (language: Language) => void;
+  onTheme: (theme: ThemePreference) => void;
 }) {
   const visibleModels = models.filter((model) =>
     model.name.toLowerCase().includes(filter.trim().toLowerCase()),
@@ -395,8 +383,8 @@ function SettingsView({
     <div className="settings-layout">
       <aside className="provider-rail card">
         <div className="settings-title">
-          <span>AI connections</span>
-          <strong>Providers</strong>
+          <span>{text.settings.connections}</span>
+          <strong>{text.settings.providers}</strong>
         </div>
         <div className="provider-options">
           {(Object.keys(PROVIDER_PRESETS) as ProviderPreset[]).map((preset) => {
@@ -408,83 +396,97 @@ function SettingsView({
                 onClick={() => onPreset(preset)}
               >
                 <span>{item.label}</span>
-                <small><i />{item.provider === "openai-compatible" ? "Cloud" : "Device"}</small>
+                <small><i />{item.provider === "openai-compatible" ? text.settings.cloud : text.settings.device}</small>
               </button>
             );
           })}
         </div>
         <div className="provider-privacy">
           <span className="privacy-lock"><LockIcon /></span>
-          <p><strong>Key stays in memory</strong><span>Cleared automatically when Localis closes.</span></p>
+          <p><strong>{text.settings.keyMemory}</strong><span>{text.settings.keyCleared}</span></p>
+        </div>
+        <div className="app-preferences">
+          <span>{text.settings.preferences}</span>
+          <label>
+            <span>{text.settings.language}</span>
+            <select value={language} onChange={(event) => onLanguage(event.target.value as Language)}>
+              <option value="en">{text.settings.english}</option>
+              <option value="ru">{text.settings.russian}</option>
+            </select>
+          </label>
+          <label>
+            <span>{text.settings.theme}</span>
+            <select value={theme} onChange={(event) => onTheme(event.target.value as ThemePreference)}>
+              <option value="system">{text.settings.system}</option>
+              <option value="light">{text.settings.light}</option>
+              <option value="dark">{text.settings.dark}</option>
+            </select>
+          </label>
         </div>
       </aside>
 
       <section className="provider-settings card">
         <div className="provider-settings-head">
           <div>
-            <span>Provider connection</span>
+            <span>{text.settings.connection}</span>
             <h1>{settings.label}</h1>
           </div>
           <div className={`connection-state ${connected ? "connected" : ""}`}>
             <i><span /></i>
-            <p><strong>{connected ? "Catalog connected" : "Ready to connect"}</strong><small>{connected ? `${models.length} models available` : "No request sent"}</small></p>
+            <p><strong>{connected ? text.settings.connected : text.settings.ready}</strong><small>{connected ? `${models.length} ${text.settings.modelsAvailable}` : text.settings.noRequest}</small></p>
           </div>
         </div>
 
         <div className="provider-form">
           {settings.preset === "custom" && (
             <label>
-              <span>Connection name</span>
-              <input value={settings.label} maxLength={80} onChange={(event) => onLabel(event.target.value)} placeholder="My provider" />
+              <span>{text.settings.connectionName}</span>
+              <input value={settings.label} maxLength={80} onChange={(event) => onLabel(event.target.value)} placeholder={text.settings.providerPlaceholder} />
             </label>
           )}
           <label className="wide-field">
-            <span>Base URL</span>
+            <span>{text.settings.baseUrl}</span>
             <input value={settings.endpoint} onChange={(event) => onEndpoint(event.target.value)} placeholder="https://api.provider.com/v1" spellCheck={false} />
           </label>
           {remote && (
             <label className="wide-field">
-              <span>API key <small>not saved to disk</small></span>
+              <span>{text.settings.apiKey} <small>{text.settings.notSaved}</small></span>
               <input
                 type="password"
                 value={apiKey}
                 onChange={(event) => onApiKey(event.target.value)}
-                placeholder={connected ? "Session key is loaded" : "Paste a provider API key"}
+                placeholder={connected ? text.settings.loadedKey : text.settings.keyPlaceholder}
                 autoComplete="off"
                 spellCheck={false}
               />
             </label>
           )}
           <div className="provider-actions wide-field">
-            <button className="connect-button" onClick={onConnect} disabled={busy || !settings.endpoint.trim()}>
-              <span className="connect-mark"><ConnectIcon /></span>
-              <span className="connect-copy"><strong>{busy ? "Loading models..." : connected ? "Refresh model catalog" : "Connect provider"}</strong><small>Read available models from /models</small></span>
-              <ArrowIcon />
-            </button>
-            {connected && <button className="disconnect-button" onClick={onDisconnect}>Disconnect</button>}
-            {connected && settings.model && <button className="open-ai-button" onClick={onOpenAI}><SparkIcon />Open AI workspace</button>}
+            <button className="connect-button" onClick={onConnect} disabled={busy || !settings.endpoint.trim()} aria-busy={busy}>{text.settings.connect}</button>
+            {connected && <button className="disconnect-button" onClick={onDisconnect}>{text.settings.disconnect}</button>}
+            {connected && settings.model && <button className="open-ai-button" onClick={onOpenAI}><SparkIcon />{text.settings.openAI}</button>}
           </div>
         </div>
 
-        {error && <div className="provider-error"><strong>Connection failed</strong><span>{error}</span></div>}
+        {error && <div className="provider-error"><strong>{text.settings.failed}</strong><span>{error}</span></div>}
 
         <div className="model-catalog">
           <div className="model-catalog-head">
-            <div><span>Discovered catalog</span><strong>{models.length} models</strong></div>
-            <input value={filter} onChange={(event) => onFilter(event.target.value)} placeholder="Filter models" disabled={!models.length} />
+            <div><span>{text.settings.catalog}</span><strong>{models.length} {text.settings.models}</strong></div>
+            <input value={filter} onChange={(event) => onFilter(event.target.value)} placeholder={text.settings.filter} disabled={!models.length} />
           </div>
           <div className="model-list">
             {visibleModels.length ? visibleModels.map((model) => (
               <button className={settings.model === model.name ? "selected" : ""} key={model.name} onClick={() => onModel(model.name)}>
-                <span><strong>{model.name}</strong><small>{model.ownedBy ?? "Available from provider"}</small></span>
+                <span><strong>{model.name}</strong><small>{model.ownedBy ?? text.settings.available}</small></span>
                 <i>{settings.model === model.name ? "✓" : ""}</i>
               </button>
             )) : (
               <div className="model-empty">
                 <span className="catalog-mark"><SparkIcon /></span>
                 <div>
-                  <strong>{models.length ? "No matching models" : "Model catalog is empty"}</strong>
-                  <span>{models.length ? "Try a shorter model name." : `Connect ${settings.label} to load every available model.`}</span>
+                  <strong>{models.length ? text.settings.noMatches : text.settings.empty}</strong>
+                  <span>{models.length ? text.settings.shorter : `${text.settings.connectNamed} ${settings.label} ${text.settings.connectToLoad}`}</span>
                 </div>
                 {!models.length && <code>GET /models</code>}
               </div>
@@ -504,6 +506,7 @@ function AIView({
   answer,
   busy,
   error,
+  text,
   onQuestion,
   onAsk,
   onChooseProject,
@@ -516,6 +519,7 @@ function AIView({
   answer: AskResponse | null;
   busy: boolean;
   error: string;
+  text: UiCopy;
   onQuestion: (value: string) => void;
   onAsk: () => void;
   onChooseProject: () => void;
@@ -525,9 +529,9 @@ function AIView({
     return (
       <div className="ai-onboarding card">
         <div className="ai-mark"><SparkIcon /></div>
-        <h1>Connect your AI.</h1>
-        <p>Choose a provider, load its model catalog, and keep control of the exact context Localis prepares.</p>
-        <button className="secondary-button" onClick={onOpenSettings}><GearIcon />Open settings</button>
+        <h1>{text.ai.connectTitle}</h1>
+        <p>{text.ai.connectBody}</p>
+        <button className="secondary-button" onClick={onOpenSettings}><GearIcon />{text.ai.openSettings}</button>
       </div>
     );
   }
@@ -536,9 +540,9 @@ function AIView({
     return (
       <div className="ai-onboarding card">
         <div className="ai-mark"><FolderIcon /></div>
-        <h1>Choose a repository.</h1>
-        <p>Localis needs a project before it can prepare redacted context for {settings.label}.</p>
-        <button className="secondary-button" onClick={onChooseProject}><FolderIcon />Choose project</button>
+        <h1>{text.ai.chooseTitle}</h1>
+        <p>{text.ai.projectNeeded} {settings.label}.</p>
+        <button className="secondary-button" onClick={onChooseProject}><FolderIcon />{text.common.chooseProject}</button>
       </div>
     );
   }
@@ -550,38 +554,38 @@ function AIView({
   return (
     <div className="ai-layout">
       <aside className="ai-context card">
-        <div className="settings-title"><span>Active connection</span><strong>{settings.label}</strong></div>
+        <div className="settings-title"><span>{text.ai.active}</span><strong>{settings.label}</strong></div>
         <dl>
-          <div><dt>Model</dt><dd>{settings.model}</dd></div>
-          <div><dt>Endpoint</dt><dd>{settings.endpoint}</dd></div>
-          <div><dt>Context files</dt><dd>{answer?.preview.files.length ?? "—"}</dd></div>
-          <div><dt>Redactions</dt><dd>{answer ? redactions : "—"}</dd></div>
+          <div><dt>{text.ai.model}</dt><dd>{settings.model}</dd></div>
+          <div><dt>{text.ai.endpoint}</dt><dd>{settings.endpoint}</dd></div>
+          <div><dt>{text.ai.contextFiles}</dt><dd>{answer?.preview.files.length ?? "—"}</dd></div>
+          <div><dt>{text.ai.redactions}</dt><dd>{answer ? redactions : "—"}</dd></div>
         </dl>
-        <div className="context-note"><StatusIcon /><p><strong>Preview before trust</strong><span>Secrets are redacted before project context reaches the provider.</span></p></div>
-        <button className="quiet-button" onClick={onOpenSettings}><GearIcon />Change provider</button>
+        <div className="context-note"><StatusIcon /><p><strong>{text.ai.preview}</strong><span>{text.ai.redacted}</span></p></div>
+        <button className="quiet-button" onClick={onOpenSettings}><GearIcon />{text.ai.changeProvider}</button>
       </aside>
 
       <section className="ai-chat card">
         <div className="ai-chat-head">
-          <div><span>Project-aware answer</span><h1>Ask Localis</h1></div>
+          <div><span>{text.ai.answer}</span><h1>{text.ai.askTitle}</h1></div>
           {answer && <code>{answer.result.model}</code>}
         </div>
         <div className="ai-answer">
           {answer ? (
             <div className="answer-copy">{answer.result.response}</div>
           ) : (
-            <div className="answer-empty"><SparkIcon /><strong>Ask about architecture, risk, or a specific file.</strong><span>Localis sends bounded, redacted context—not the entire repository.</span></div>
+            <div className="answer-empty"><SparkIcon /><strong>{text.ai.empty}</strong><span>{text.ai.bounded}</span></div>
           )}
         </div>
-        {error && <div className="provider-error"><strong>AI request failed</strong><span>{error}</span></div>}
+        {error && <div className="provider-error"><strong>{text.ai.failed}</strong><span>{error}</span></div>}
         <div className="prompt-box">
           <textarea
             value={question}
             onChange={(event) => onQuestion(event.target.value)}
-            placeholder="How does authentication work in this project?"
+            placeholder={text.ai.placeholder}
             maxLength={4000}
           />
-          <div><span>{question.length}/4000</span><button onClick={onAsk} disabled={busy || !question.trim()}><SparkIcon />{busy ? "Thinking…" : "Ask AI"}</button></div>
+          <div><span>{question.length}/4000</span><button onClick={onAsk} disabled={busy || !question.trim()}><SparkIcon />{busy ? text.ai.thinking : text.ai.ask}</button></div>
         </div>
       </section>
     </div>
@@ -607,12 +611,29 @@ export function App() {
   const [answer, setAnswer] = useState<AskResponse | null>(null);
   const [askBusy, setAskBusy] = useState(false);
   const [askError, setAskError] = useState("");
+  const [preferences, setPreferences] = useState(loadPreferences);
 
-  const projectName = useMemo(() => project.split(/[\\/]/).filter(Boolean).at(-1) ?? "Workspace", [project]);
+  const text = UI_COPY[preferences.language];
+  const projectName = useMemo(() => project.split(/[\\/]/).filter(Boolean).at(-1) ?? text.common.workspace, [project, text.common.workspace]);
   const activeReport = reportType === operation ? report : null;
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = preferences.theme;
+    document.documentElement.lang = preferences.language;
+    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      document.documentElement.dataset.colorScheme = preferences.theme === "system"
+        ? media.matches ? "dark" : "light"
+        : preferences.theme;
+    };
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [preferences]);
+
   async function chooseProject() {
-    const selected = await open({ directory: true, multiple: false, title: "Open a repository in Localis" });
+    const selected = await open({ directory: true, multiple: false, title: text.common.openRepository });
     if (typeof selected === "string") {
       setProject(selected);
       setReport(null);
@@ -623,7 +644,7 @@ export function App() {
 
   async function run() {
     if (!project.trim()) {
-      setError("Choose a project folder before running Localis.");
+      setError(text.errors.chooseFirst);
       return;
     }
     setView(operation);
@@ -747,37 +768,36 @@ export function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <Logo onClick={goHome} />
-        <button className="project-picker" onClick={chooseProject} title={project || "Choose a local repository"}>
+        <Logo onClick={goHome} homeLabel={text.operations.audit.label} />
+        <button className="project-picker" onClick={chooseProject} title={project || text.common.chooseRepository}>
           <FolderIcon />
           <span>{projectName}</span>
           <ChevronDownIcon />
         </button>
-        <nav className="operation-tabs" aria-label="Workspace tools">
-          {operations.map((item) => (
+        <nav className="operation-tabs" aria-label={text.common.workspaceTools}>
+          {OPERATION_IDS.map((id) => (
             <button
-              aria-current={operation === item.id ? "page" : undefined}
-              className={operation === item.id ? "active" : ""}
-              key={item.id}
-              onClick={() => { setOperation(item.id); setView(item.id); setError(""); setAskError(""); }}
-              title={item.description}
+              aria-current={operation === id ? "page" : undefined}
+              className={operation === id ? "active" : ""}
+              key={id}
+              onClick={() => { setOperation(id); setView(id); setError(""); setAskError(""); }}
+              title={text.operations[id].description}
             >
-              {item.label}
+              {text.operations[id].label}
             </button>
           ))}
         </nav>
         <div className={`local-status ${providerConnected && providerSettings.provider === "openai-compatible" ? "cloud" : ""}`}>
-          <i /><span>{providerConnected ? providerSettings.label : "Local machine"}</span>
+          <i /><span>{providerConnected ? providerSettings.label : text.common.localMachine}</span>
         </div>
         <button
           className={`settings-button ${view === "settings" ? "active" : ""}`}
           onClick={() => { setView("settings"); setError(""); }}
-          aria-label="Settings"
-          title="Settings"
+          aria-label={text.common.settings}
+          title={text.common.settings}
         ><GearIcon /></button>
         <button className="run-button" onClick={run} disabled={busy || !project.trim()}>
-          <PlayIcon />
-          {busy ? "Running…" : `Run ${operation}`}
+          {busy ? text.common.running : text.common.run[operation]}
         </button>
       </header>
 
@@ -791,6 +811,9 @@ export function App() {
             connected={providerConnected}
             busy={providerBusy}
             error={providerError}
+            text={text}
+            language={preferences.language}
+            theme={preferences.theme}
             onPreset={selectProviderPreset}
             onLabel={(label) => updateProviderSettings({ label })}
             onEndpoint={(endpoint) => updateProviderSettings({ endpoint })}
@@ -800,6 +823,8 @@ export function App() {
             onConnect={connectProvider}
             onDisconnect={disconnectProvider}
             onOpenAI={() => setView("ai")}
+            onLanguage={(language) => setPreferences((current) => ({ ...current, language }))}
+            onTheme={(theme) => setPreferences((current) => ({ ...current, theme }))}
           />
         ) : view === "ai" ? (
           <AIView
@@ -810,6 +835,7 @@ export function App() {
             answer={answer}
             busy={askBusy}
             error={askError}
+            text={text}
             onQuestion={setQuestion}
             onAsk={askAI}
             onChooseProject={chooseProject}
@@ -817,15 +843,15 @@ export function App() {
           />
         ) : (
           <>
-            {error && <div className="error-banner"><strong>Localis could not run</strong><span>{error}</span></div>}
+            {error && <div className="error-banner"><strong>{text.errors.runFailed}</strong><span>{error}</span></div>}
             {!activeReport ? (
-              <EmptyState operation={operation!} onChoose={chooseProject} />
+              <EmptyState operation={operation} onChoose={chooseProject} text={text} />
             ) : operation === "audit" ? (
-              <AuditView report={activeReport as AuditReport} />
+              <AuditView report={activeReport as AuditReport} text={text} />
             ) : operation === "privacy" ? (
-              <PrivacyView report={activeReport as PrivacyReport} />
+              <PrivacyView report={activeReport as PrivacyReport} text={text} />
             ) : (
-              <ShipView report={activeReport as ShipReport} />
+              <ShipView report={activeReport as ShipReport} text={text} />
             )}
           </>
         )}
