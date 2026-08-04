@@ -8,6 +8,7 @@ dist/
 .next/
 out/
 .localis-web.*.log
+.localis-desktop.*.log
 *.tsbuildinfo
 .localis/
 

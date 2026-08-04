@@ -1,16 +1,23 @@
 # Localis Desktop
 
-The desktop application is planned for the next milestone.
+Native Tauri 2 workspace for Localis. It opens a local repository and renders
+audit, privacy, and ship reports from the same `@localis/core` contracts used by
+the CLI.
 
-Chosen stack:
+## Development
 
-- Tauri 2 for the native shell;
-- React and TypeScript for the interface;
-- `@localis/core` contracts for audits and privacy reports;
-- no background telemetry by default.
+Requirements: Node.js 20.9+, Rust 1.77.2+, and the platform prerequisites from
+the Tauri documentation.
 
-The first usable screen will open a repository, run a deterministic audit, filter findings, and display the local/cloud Privacy Boundary before any AI action.
+```bash
+npm install
+npm run build
+npm run dev:desktop
+```
 
-The required core contracts now exist: audits, bounded context preparation, redaction manifests, payload hashes, and loopback-only Ollama generation. The desktop shell can consume these contracts without inventing a second privacy model.
+The Rust bridge only accepts the allowlisted `audit`, `privacy`, `ship`, and
+`doctor` operations. It invokes the built Localis CLI with an argument array,
+never a shell command. Packaged builds expect Node.js 20.9+ on the machine.
 
-The proposal and transaction contracts are also ready: the GUI can request a schema-constrained local AI proposal, render `ChangePreview`, require a deliberate approval action, call `applyChangePlan`, show backup history, and expose conflict-safe undo.
+No telemetry or remote origin is configured. Native folder access is limited
+to a user-selected directory through the Tauri dialog capability.

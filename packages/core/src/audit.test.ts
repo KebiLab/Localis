@@ -95,3 +95,14 @@ test("audit supports explicit rule-level suppressions", async () => {
     await fs.rm(root, { recursive: true, force: true });
   }
 });
+
+test("audit does not mistake image density filenames for email addresses", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "localis-density-"));
+  try {
+    await fs.writeFile(path.join(root, "config.json"), '{"icon":"128x128@2x.png"}\n');
+    const report = await runAudit(root);
+    assert.equal(report.findings.length, 0);
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});

@@ -6,6 +6,7 @@
 - Added `--provider ollama|lmstudio` to `models`, `ask`, and `propose`.
 - Added stable audit finding IDs and `localis fix` for narrowly scoped fix plans.
 - Added multi-ecosystem test discovery and a deterministic `localis ship` release gate.
+- Added the Tauri 2 desktop workspace for audit, privacy, and ship reports.
 
 All notable changes to Localis will be documented here.
 

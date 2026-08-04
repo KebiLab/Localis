@@ -43,7 +43,7 @@ The first development milestone includes:
 - a reusable `@localis/core` package;
 - the first Vercel-ready product website.
 
-The desktop application and broader test/release intelligence are on the roadmap and are not presented as finished features yet.
+The Tauri desktop workspace is now available for local audit, privacy, and ship reports. Native packaging requires the Rust and platform prerequisites documented in `apps/desktop/README.md`.
 
 ## Quick start
 
@@ -116,7 +116,7 @@ node apps/cli/dist/index.js ship .
 ```text
 apps/
   cli/       Localis command-line interface
-  desktop/   Tauri desktop application plan
+  desktop/   Tauri 2 + React native workspace
   web/       Next.js product website for Vercel
 packages/
   core/      Scanner, audit rules, privacy boundary, environment checks
@@ -134,7 +134,7 @@ docs/
 - [x] Local Ollama generation of schema-constrained change plans
 - [x] LM Studio model adapter
 - [x] One-click plan generation from individual audit findings
-- [ ] Tauri desktop workspace for Windows, macOS, and Linux
+- [x] Tauri desktop workspace for Windows, macOS, and Linux
 - [x] Test intelligence and release readiness checks
 - [ ] VS Code, JetBrains, and CI integrations
 

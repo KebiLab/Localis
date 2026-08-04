@@ -128,6 +128,12 @@ export function analyzeFile(file: ProjectFile, source: string): Array<Omit<Audit
       const offset = match.index ?? 0;
       const location = lineAndColumn(source, offset);
       const evidence = match[rule.evidenceGroup ?? 0] ?? match[0];
+      if (
+        rule.id === "privacy.personal-email" &&
+        /^\d+x\d+@\d+x\.[a-z0-9]+$/i.test(evidence)
+      ) {
+        continue;
+      }
       const currentLine = sourceLines[location.line - 1] ?? "";
       const previousLine = sourceLines[location.line - 2] ?? "";
       const ignoredOnLine = currentLine.includes(`localis-ignore ${rule.id}`);
