@@ -105,7 +105,24 @@ function GearIcon() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
       <circle cx="10" cy="10" r="2.6" />
-      <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4" />
+      <path d="M8.7 2.4h2.6l.4 1.9c.5.2 1 .4 1.4.8l1.8-.6 1.3 2.2-1.4 1.3c.1.6.1 1.1 0 1.7l1.4 1.3-1.3 2.2-1.8-.6c-.4.4-.9.6-1.4.8l-.4 1.9H8.7l-.4-1.9c-.5-.2-1-.4-1.4-.8l-1.8.6L3.8 11l1.4-1.3a6 6 0 0 1 0-1.7L3.8 6.7l1.3-2.2 1.8.6c.4-.4.9-.6 1.4-.8l.4-1.9Z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <rect x="4.5" y="8.5" width="11" height="8" rx="2" />
+      <path d="M7 8.5V6.4a3 3 0 0 1 6 0v2.1M10 11.5v2" />
+    </svg>
+  );
+}
+
+function ConnectIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M7.7 12.3 12.3 7.7M6.2 9.8l-1.5 1.5a3.1 3.1 0 0 0 4.4 4.4l1.5-1.5M13.8 10.2l1.5-1.5a3.1 3.1 0 0 0-4.4-4.4L9.4 5.8" />
     </svg>
   );
 }
@@ -350,6 +367,7 @@ function SettingsView({
   onModel,
   onConnect,
   onDisconnect,
+  onOpenAI,
 }: {
   settings: ProviderSettings;
   models: ProviderModel[];
@@ -366,6 +384,7 @@ function SettingsView({
   onModel: (model: string) => void;
   onConnect: () => void;
   onDisconnect: () => void;
+  onOpenAI: () => void;
 }) {
   const visibleModels = models.filter((model) =>
     model.name.toLowerCase().includes(filter.trim().toLowerCase()),
@@ -389,14 +408,14 @@ function SettingsView({
                 onClick={() => onPreset(preset)}
               >
                 <span>{item.label}</span>
-                <small>{item.provider === "openai-compatible" ? "API" : "Local"}</small>
+                <small><i />{item.provider === "openai-compatible" ? "Cloud" : "Device"}</small>
               </button>
             );
           })}
         </div>
         <div className="provider-privacy">
-          <StatusIcon />
-          <p><strong>Session-only secret</strong><span>API keys stay in memory and clear when Localis closes.</span></p>
+          <span className="privacy-lock"><LockIcon /></span>
+          <p><strong>Key stays in memory</strong><span>Cleared automatically when Localis closes.</span></p>
         </div>
       </aside>
 
@@ -406,7 +425,10 @@ function SettingsView({
             <span>Provider connection</span>
             <h1>{settings.label}</h1>
           </div>
-          <div className={`connection-chip ${connected ? "connected" : ""}`}><i />{connected ? "Connected" : "Not connected"}</div>
+          <div className={`connection-state ${connected ? "connected" : ""}`}>
+            <i><span /></i>
+            <p><strong>{connected ? "Catalog connected" : "Ready to connect"}</strong><small>{connected ? `${models.length} models available` : "No request sent"}</small></p>
+          </div>
         </div>
 
         <div className="provider-form">
@@ -435,10 +457,12 @@ function SettingsView({
           )}
           <div className="provider-actions wide-field">
             <button className="connect-button" onClick={onConnect} disabled={busy || !settings.endpoint.trim()}>
-              <SparkIcon />
-              {busy ? "Loading models…" : "Connect and load models"}
+              <span className="connect-mark"><ConnectIcon /></span>
+              <span className="connect-copy"><strong>{busy ? "Loading models..." : connected ? "Refresh model catalog" : "Connect provider"}</strong><small>Read available models from /models</small></span>
+              <ArrowIcon />
             </button>
             {connected && <button className="disconnect-button" onClick={onDisconnect}>Disconnect</button>}
+            {connected && settings.model && <button className="open-ai-button" onClick={onOpenAI}><SparkIcon />Open AI workspace</button>}
           </div>
         </div>
 
@@ -457,9 +481,12 @@ function SettingsView({
               </button>
             )) : (
               <div className="model-empty">
-                <SparkIcon />
-                <strong>{models.length ? "No matching model" : "Connect to discover models"}</strong>
-                <span>Localis reads the provider model catalog automatically.</span>
+                <span className="catalog-mark"><SparkIcon /></span>
+                <div>
+                  <strong>{models.length ? "No matching models" : "Model catalog is empty"}</strong>
+                  <span>{models.length ? "Try a shorter model name." : `Connect ${settings.label} to load every available model.`}</span>
+                </div>
+                {!models.length && <code>GET /models</code>}
               </div>
             )}
           </div>
@@ -564,6 +591,7 @@ function AIView({
 export function App() {
   const [project, setProject] = useState("");
   const [view, setView] = useState<WorkspaceView>("audit");
+  const [operation, setOperation] = useState<Operation>("audit");
   const [report, setReport] = useState<WorkspaceReport | null>(null);
   const [reportType, setReportType] = useState<Operation | null>(null);
   const [busy, setBusy] = useState(false);
@@ -581,8 +609,7 @@ export function App() {
   const [askError, setAskError] = useState("");
 
   const projectName = useMemo(() => project.split(/[\\/]/).filter(Boolean).at(-1) ?? "Workspace", [project]);
-  const operation = operations.some((item) => item.id === view) ? view as Operation : null;
-  const activeReport = operation && reportType === operation ? report : null;
+  const activeReport = reportType === operation ? report : null;
 
   async function chooseProject() {
     const selected = await open({ directory: true, multiple: false, title: "Open a repository in Localis" });
@@ -595,10 +622,11 @@ export function App() {
   }
 
   async function run() {
-    if (!operation || !project.trim()) {
+    if (!project.trim()) {
       setError("Choose a project folder before running Localis.");
       return;
     }
+    setView(operation);
     setBusy(true);
     setError("");
     try {
@@ -709,6 +737,7 @@ export function App() {
   }
 
   function goHome() {
+    setOperation("audit");
     setView("audit");
     setReport(null);
     setReportType(null);
@@ -725,12 +754,12 @@ export function App() {
           <ChevronDownIcon />
         </button>
         <nav className="operation-tabs" aria-label="Workspace tools">
-          {[...operations.slice(0, 2), { id: "ai" as const, label: "AI", description: "Ask a connected model" }, operations[2]!].map((item) => (
+          {operations.map((item) => (
             <button
-              aria-current={view === item.id ? "page" : undefined}
-              className={view === item.id ? "active" : ""}
+              aria-current={operation === item.id ? "page" : undefined}
+              className={operation === item.id ? "active" : ""}
               key={item.id}
-              onClick={() => { setView(item.id); setError(""); setAskError(""); }}
+              onClick={() => { setOperation(item.id); setView(item.id); setError(""); setAskError(""); }}
               title={item.description}
             >
               {item.label}
@@ -743,15 +772,13 @@ export function App() {
         <button
           className={`settings-button ${view === "settings" ? "active" : ""}`}
           onClick={() => { setView("settings"); setError(""); }}
-          aria-label="AI provider settings"
-          title="AI provider settings"
+          aria-label="Settings"
+          title="Settings"
         ><GearIcon /></button>
-        {operation ? (
-          <button className="run-button" onClick={run} disabled={busy || !project.trim()}>
+        <button className="run-button" onClick={run} disabled={busy || !project.trim()}>
           <PlayIcon />
           {busy ? "Running…" : `Run ${operation}`}
-          </button>
-        ) : <div className="run-button-placeholder" />}
+        </button>
       </header>
 
       <section className="workspace">
@@ -772,6 +799,7 @@ export function App() {
             onModel={selectProviderModel}
             onConnect={connectProvider}
             onDisconnect={disconnectProvider}
+            onOpenAI={() => setView("ai")}
           />
         ) : view === "ai" ? (
           <AIView

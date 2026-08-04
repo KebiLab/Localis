@@ -70,9 +70,9 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 
 .operation-tabs {
   justify-self: center;
-  min-width: 360px;
+  min-width: 330px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -122,8 +122,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
   cursor: pointer;
 }
 .settings-button:hover, .settings-button.active { border-color: #d5d3f2; background: var(--primary-soft); color: var(--primary); }
-.settings-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 1.7; }
-.run-button-placeholder { width: 110px; }
+.settings-button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.45; }
 
 .run-button,
 .secondary-button {
@@ -305,22 +304,36 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 }
 .provider-options button:hover { background: var(--surface-soft); }
 .provider-options button.active { border-color: #d8d6f3; background: var(--primary-soft); color: var(--primary); }
-.provider-options span { font-size: 13px; font-weight: 690; }
-.provider-options small { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.provider-options span { font-size: 14px; font-weight: 690; }
+.provider-options small { display: flex; align-items: center; gap: 6px; color: #7d8792; font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 9px; font-weight: 600; letter-spacing: .025em; }
+.provider-options small i { width: 5px; height: 5px; border-radius: 50%; background: #bcc3ca; }
 .provider-options button.active small { color: var(--primary); }
+.provider-options button.active small i { background: var(--primary); }
 
-.provider-privacy,
+.provider-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 25px;
+  padding: 14px;
+  border: 1px solid #e1e5e9;
+  border-radius: 14px;
+  background: #f8faf9;
+}
+.privacy-lock { width: 30px; height: 30px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 10px; background: var(--green-soft); color: var(--green); }
+.privacy-lock svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
 .context-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--line); }
 .provider-privacy p,
 .context-note p { margin: 0; }
 .provider-privacy strong,
-.provider-privacy span,
+.provider-privacy p > span,
 .context-note strong,
 .context-note span { display: block; }
-.provider-privacy strong,
+.provider-privacy strong { font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 11px; font-weight: 620; letter-spacing: -.01em; }
 .context-note strong { font-size: 11px; }
-.provider-privacy span,
+.provider-privacy p > span,
 .context-note span { margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.provider-privacy p > span { font-size: 11px; }
 
 .provider-settings { display: flex; flex-direction: column; padding: 24px; }
 .provider-settings-head,
@@ -328,32 +341,44 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .ai-chat-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .provider-settings-head h1,
 .ai-chat-head h1 { margin: 0; font-size: 26px; letter-spacing: -.045em; }
-.connection-chip { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 680; }
-.connection-chip i { width: 7px; height: 7px; border-radius: 50%; background: #aeb6bf; }
-.connection-chip.connected { color: var(--green); }
-.connection-chip.connected i { background: #49a278; box-shadow: 0 0 0 4px rgba(73, 162, 120, .12); }
+.connection-state { min-width: 168px; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-soft); }
+.connection-state > i { width: 28px; height: 28px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 9px; background: #edf0f3; }
+.connection-state > i span { width: 7px; height: 7px; border-radius: 50%; background: #9ca6b0; }
+.connection-state p { margin: 0; }
+.connection-state strong, .connection-state small { display: block; }
+.connection-state strong { font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 10px; font-weight: 630; }
+.connection-state small { margin-top: 3px; color: var(--muted); font-size: 9px; }
+.connection-state.connected { border-color: #cfe1d7; background: #f4f9f6; }
+.connection-state.connected > i { background: var(--green-soft); }
+.connection-state.connected > i span { background: #49a278; box-shadow: 0 0 0 4px rgba(73, 162, 120, .11); }
+.connection-state.connected strong { color: var(--green); }
 
 .provider-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
 .provider-form label { display: grid; gap: 7px; }
-.provider-form label > span { color: var(--muted); font-size: 10px; font-weight: 680; }
+.provider-form label > span { color: var(--muted); font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 10px; font-weight: 620; letter-spacing: -.01em; }
 .provider-form label small { margin-left: 4px; color: #98a1ab; font-weight: 550; }
 .provider-form .wide-field { grid-column: 1 / -1; }
 .provider-form input,
 .model-catalog-head input {
   width: 100%;
-  height: 43px;
-  padding: 0 13px;
+  height: 48px;
+  padding: 0 15px;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 14px;
   outline: none;
-  background: var(--surface-soft);
-  font-size: 12px;
+  background: #fbfcfd;
+  color: var(--ink);
+  font: 570 14px/1 "Manrope Variable", "Segoe UI Variable", sans-serif;
+  letter-spacing: -.01em;
 }
+.provider-form input::placeholder,
+.model-catalog-head input::placeholder { color: #929ba5; font-weight: 500; opacity: 1; }
 .provider-form input:focus,
 .model-catalog-head input:focus { border-color: #aaa7de; box-shadow: 0 0 0 3px rgba(77, 75, 184, .09); }
-.provider-actions { display: flex; align-items: center; gap: 10px; }
+.provider-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 2px; }
 .connect-button,
 .disconnect-button,
+.open-ai-button,
 .quiet-button,
 .prompt-box button {
   min-height: 42px;
@@ -368,10 +393,34 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
   font-size: 11px;
   font-weight: 720;
 }
-.connect-button, .prompt-box button { background: var(--primary); color: white; }
+.connect-button {
+  min-width: 278px;
+  min-height: 58px;
+  justify-content: flex-start;
+  gap: 11px;
+  padding: 7px 12px 7px 8px;
+  border: 1px solid #252f3b;
+  border-radius: 15px;
+  background: var(--ink);
+  color: white;
+  box-shadow: 0 5px 12px rgba(23, 32, 44, .12);
+  text-align: left;
+  transition: background .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.connect-button:hover:not(:disabled) { background: #222d39; box-shadow: 0 7px 16px rgba(23, 32, 44, .16); transform: translateY(-1px); }
+.connect-mark { width: 40px; height: 40px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 11px; background: rgba(255, 255, 255, .1); color: #cfceff; }
+.connect-copy { min-width: 0; flex: 1; }
+.connect-copy strong, .connect-copy small { display: block; }
+.connect-copy strong { font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 11px; font-weight: 630; }
+.connect-copy small { margin-top: 4px; color: #adb6c0; font-size: 9px; font-weight: 520; }
+.connect-button > svg:last-child { width: 17px; height: 17px; }
+.prompt-box button { background: var(--primary); color: white; }
 .connect-button:disabled, .prompt-box button:disabled { cursor: not-allowed; opacity: .48; }
-.disconnect-button, .quiet-button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+.disconnect-button, .quiet-button, .open-ai-button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+.open-ai-button { color: var(--primary); }
+.disconnect-button:hover, .quiet-button:hover, .open-ai-button:hover { border-color: var(--line-strong); background: var(--surface-soft); color: var(--ink); }
 .connect-button svg,
+.open-ai-button svg,
 .quiet-button svg,
 .prompt-box button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; }
 
@@ -381,7 +430,7 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 
 .model-catalog { min-height: 0; display: flex; flex: 1; flex-direction: column; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .model-catalog-head > div strong { display: block; font-size: 15px; }
-.model-catalog-head input { width: 210px; height: 38px; }
+.model-catalog-head input { width: 210px; height: 40px; }
 .model-list { min-height: 185px; display: grid; align-content: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 13px; overflow: auto; }
 .model-list > button { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); cursor: pointer; text-align: left; }
 .model-list > button:hover { border-color: var(--line-strong); background: var(--surface-soft); }
@@ -393,10 +442,14 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
 .model-list > button small { margin-top: 4px; color: var(--muted); font-size: 9px; }
 .model-list > button i { width: 20px; height: 20px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 7px; color: var(--primary); font-size: 11px; font-style: normal; }
 .model-list > button.selected i { background: white; }
-.model-empty { grid-column: 1 / -1; min-height: 175px; display: grid; place-content: center; justify-items: center; color: var(--muted); text-align: center; }
-.model-empty svg { width: 24px; height: 24px; margin-bottom: 10px; fill: none; stroke: var(--primary); stroke-width: 1.4; }
-.model-empty strong { color: var(--ink); font-size: 12px; }
-.model-empty span { margin-top: 5px; font-size: 10px; }
+.model-empty { grid-column: 1 / -1; min-height: 175px; display: flex; align-items: center; justify-content: center; gap: 13px; padding: 26px; color: var(--muted); text-align: left; }
+.catalog-mark { width: 42px; height: 42px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid #dddaf7; border-radius: 13px; background: var(--primary-soft); color: var(--primary); }
+.model-empty .catalog-mark svg { width: 19px; height: 19px; margin: 0; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.model-empty > div { max-width: 300px; }
+.model-empty strong, .model-empty > div span { display: block; }
+.model-empty strong { color: var(--ink); font-family: "Sora Variable", "Manrope Variable", sans-serif; font-size: 13px; font-weight: 620; }
+.model-empty > div span { margin-top: 5px; font-size: 11px; line-height: 1.5; }
+.model-empty code { margin-left: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); color: #7b8490; font-size: 8px; }
 
 .ai-onboarding { width: min(650px, 100%); min-height: 450px; display: grid; place-content: center; justify-items: center; margin: 4vh auto; padding: 45px; text-align: center; }
 .ai-mark { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 20px; border-radius: 18px; background: var(--primary-soft); color: var(--primary); }
@@ -433,7 +486,6 @@ code { font-family: "JetBrains Mono Variable", "Cascadia Code", monospace; }
   .topbar { grid-template-columns: 145px minmax(135px, 170px) 1fr 42px 100px; padding: 0 calc(22px + 4vw); }
   .local-status { display: none; }
   .operation-tabs { min-width: 330px; }
-  .run-button-placeholder { width: 100px; }
   .dashboard-grid { grid-template-columns: minmax(245px, .7fr) minmax(420px, 1.3fr); }
   .workspace { padding: 22px; }
   .settings-layout, .ai-layout { grid-template-columns: 235px minmax(0, 1fr); }
