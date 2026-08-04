@@ -4,6 +4,7 @@ KodikDevKit-main/
 
 # Dependencies and build output
 node_modules/
+.npm-cache/
 dist/
 .next/
 out/
@@ -13,6 +14,9 @@ apps/desktop/src-tauri/gen/schemas/
 .localis-desktop.*.log
 *.tsbuildinfo
 .localis/
+
+# Private launch copy and outreach drafts. Keep these local.
+private-launch-kit/
 
 # Local environment files
 .env

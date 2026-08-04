@@ -11,7 +11,7 @@ import type {
   LocalModelProvider,
   ShipReport,
   VerificationReport,
-} from "@localis/core";
+} from "localis-core";
 
 const ANSI = {
   reset: "\u001B[0m",

@@ -10,34 +10,29 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-
       - run: npm ci
-      - run: npm run typecheck
       - run: npm test
+      - run: npm run typecheck
       - run: npm run build
 
   desktop-native:
     runs-on: windows-latest
-    timeout-minutes: 20
-
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
-
+      - uses: dtolnay/rust-toolchain@stable
       - run: npm ci
       - run: npm run build:core
       - run: npm run build:cli

@@ -118,6 +118,7 @@ export const UI_COPY = {
       english: "English", russian: "Русский", system: "Системная", light: "Светлая", dark: "Тёмная",
       connection: "Подключение провайдера", connected: "Каталог подключён", ready: "Готово к подключению",
       modelsAvailable: "моделей доступно", noRequest: "Запрос ещё не отправлялся", connectionName: "Название подключения",
+      // localis-ignore-next-line secret.generic-assignment -- translated UI labels, not credentials
       providerPlaceholder: "Мой провайдер", baseUrl: "Базовый URL", apiKey: "API-ключ", notSaved: "не сохраняется на диск",
       loadedKey: "Ключ загружен для этой сессии", keyPlaceholder: "Вставьте API-ключ провайдера",
       connect: "Подключить провайдера", disconnect: "Отключить", openAI: "Открыть ИИ",

@@ -17,7 +17,7 @@ versioning.
 - Multi-ecosystem test discovery and the deterministic `localis ship` gate.
 - Tauri 2 desktop workspace for audit, privacy, and ship reports.
 - Windows native desktop verification in CI.
-- Vercel-ready product website and Russian launch article.
+- Bilingual product website, standalone documentation, and real product captures.
 
 ### Security
 

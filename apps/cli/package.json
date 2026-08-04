@@ -1,7 +1,7 @@
 {
-  "name": "@localis/cli",
+  "name": "localis",
   "version": "0.2.0",
-  "description": "Localis command-line interface.",
+  "description": "Private, local-first code audits, AI change plans, and release checks.",
   "license": "Apache-2.0",
   "author": "KebiLab",
   "repository": {
@@ -15,6 +15,14 @@
     "access": "public",
     "provenance": true
   },
+  "keywords": [
+    "cli",
+    "code-audit",
+    "local-first",
+    "privacy",
+    "developer-tools",
+    "ai"
+  ],
   "type": "module",
   "bin": {
     "localis": "./dist/index.js"
@@ -32,7 +40,7 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
-    "@localis/core": "0.2.0"
+    "localis-core": "0.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

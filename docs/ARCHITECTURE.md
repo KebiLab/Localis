@@ -13,7 +13,7 @@ CI ------------------+          |
                                 +-- Verification and ship gate
 ```
 
-## `@localis/core`
+## `localis-core`
 
 The core owns project discovery, bounded file reads, deterministic audit rules,
 redaction, change transactions, local model adapters, and verification. It does

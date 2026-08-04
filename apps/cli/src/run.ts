@@ -18,7 +18,7 @@ import {
   runShipCheck,
   runVerification,
   undoChangeSession,
-} from "@localis/core";
+} from "localis-core";
 import { promises as fs } from "node:fs";
 
 import {
@@ -476,7 +476,7 @@ function selectedProvider(parsed: ParsedArguments) {
   );
 }
 
-function selectedEndpoint(parsed: ParsedArguments, provider: import("@localis/core").LocalModelProvider) {
+function selectedEndpoint(parsed: ParsedArguments, provider: import("localis-core").LocalModelProvider) {
   const explicit = optionValue(parsed, "--endpoint");
   if (explicit) return explicit;
   if (provider === "ollama") return process.env.LOCALIS_OLLAMA_ENDPOINT;
@@ -484,7 +484,7 @@ function selectedEndpoint(parsed: ParsedArguments, provider: import("@localis/co
   return process.env.LOCALIS_API_ENDPOINT;
 }
 
-function selectedModel(provider: import("@localis/core").LocalModelProvider) {
+function selectedModel(provider: import("localis-core").LocalModelProvider) {
   if (provider === "ollama") return process.env.LOCALIS_OLLAMA_MODEL;
   if (provider === "lmstudio") return process.env.LOCALIS_LMSTUDIO_MODEL;
   return process.env.LOCALIS_API_MODEL;
@@ -492,7 +492,7 @@ function selectedModel(provider: import("@localis/core").LocalModelProvider) {
 
 function selectedApiKey(
   parsed: ParsedArguments,
-  provider: import("@localis/core").LocalModelProvider,
+  provider: import("localis-core").LocalModelProvider,
 ): string | undefined {
   if (provider !== "openai-compatible") return undefined;
   const name = optionValue(parsed, "--api-key-env") ?? "LOCALIS_API_KEY";
@@ -502,13 +502,13 @@ function selectedApiKey(
   return process.env[name];
 }
 
-function providerLabel(provider: import("@localis/core").LocalModelProvider): string {
+function providerLabel(provider: import("localis-core").LocalModelProvider): string {
   if (provider === "ollama") return "Ollama";
   if (provider === "lmstudio") return "LM Studio";
   return "the API provider";
 }
 
-function selectFinding(findings: import("@localis/core").AuditFinding[], selector: string) {
+function selectFinding(findings: import("localis-core").AuditFinding[], selector: string) {
   if (/^\d+$/.test(selector)) {
     const finding = findings[Number.parseInt(selector, 10) - 1];
     if (finding) return finding;

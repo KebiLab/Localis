@@ -2,7 +2,7 @@
 
 Native Tauri 2 workspace for Localis. It opens a local repository, renders
 audit, privacy, and ship reports, and provides a project-aware AI workspace from
-the same `@localis/core` contracts used by the CLI.
+the same `localis-core` contracts used by the CLI.
 
 ## Development
 

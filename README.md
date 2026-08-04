@@ -1,174 +1,174 @@
 <div align="center">
+  <img src="apps/web/src/app/icon.svg" width="92" alt="Localis logo" />
 
-# Localis
+  # Localis
 
-**Your code. Your machine. Your AI.**
+  **Private by default. Useful by design.**
 
-Private, local-first developer workspace for code audits, safe fixes, tests, and release workflows.
+  Local-first code audits, deliberate AI context, reviewable changes, and release checks.
 
-[Website](https://localis.dev) · [Roadmap](#roadmap) · [Contributing](CONTRIBUTING.md)
+  [Website](https://localis.dev) · [Documentation](https://localis.dev/docs) · [Releases](https://github.com/KebiLab/Localis/releases) · [Security](SECURITY.md)
 
-_Made by KebiLab._
-
+  [![CI](https://github.com/KebiLab/Localis/actions/workflows/ci.yml/badge.svg)](https://github.com/KebiLab/Localis/actions/workflows/ci.yml)
+  [![Release](https://img.shields.io/github/v/release/KebiLab/Localis?include_prereleases&label=release)](https://github.com/KebiLab/Localis/releases)
+  [![npm](https://img.shields.io/npm/v/localis?label=npm)](https://www.npmjs.com/package/localis)
+  [![License](https://img.shields.io/badge/license-Apache--2.0-5b50d9)](LICENSE)
 </div>
 
 ---
 
-## Why Localis
+## What Localis does
 
-AI developer tools should not make you choose between speed and control. Localis starts with deterministic, offline analysis and keeps every network boundary explicit. Local models and cloud providers are optional capabilities—not hidden defaults.
+Localis starts without a model. It scans a repository locally, reports deterministic evidence, and makes every network boundary explicit. Connect Ollama, LM Studio, OpenAI, OpenRouter, or another OpenAI-compatible API only when a task needs a model.
 
-Localis is being built around three promises:
+| Workflow | What you get |
+| --- | --- |
+| `localis audit` | Local findings with file, line, rule, severity, and remediation |
+| `localis privacy` | Selected files, redaction counts, endpoint, and payload SHA-256 |
+| `localis ask` | Project-aware answers using only approved context |
+| `localis propose` / `fix` | Schema-constrained change plans that cannot write by themselves |
+| `localis apply` / `undo` | Diff preview, hash checks, private backups, and conflict-safe restore |
+| `localis test` / `ship` | Test discovery and one release-readiness decision |
 
-- **Local by default.** Project discovery, deterministic checks, redaction, and reports run on your machine.
-- **Evidence before advice.** Every finding points to a file, line, rule, and concrete reason.
-- **Preview before change.** Planned AI fixes will always be reviewable and reversible before they touch source code.
+## Real interfaces
 
-## Current foundation
+These captures come from Localis 0.2.0, not a product mockup.
 
-The first development milestone includes:
+<p align="center">
+  <img src="apps/web/public/screenshots/localis-desktop.png" width="100%" alt="Localis desktop application" />
+</p>
 
-- `localis audit [path]` — deterministic project and security scan;
-- `localis doctor` — environment readiness checks for Node.js, Git, and Ollama;
-- `localis privacy [path]` — exact outbound manifest, redaction counts, and payload hash;
-- `localis models` — automatic model discovery from the selected provider;
-- `localis ask <question> [path]` — project-aware answers through a local or explicitly connected API model;
-- `localis propose <task> [path]` — schema-constrained local AI change plan generation;
-- `localis fix <finding> [path]` — generate a narrowly scoped plan from an audit finding number or ID;
-- `localis test [path]` — discover and run tests across Node.js, Python, Rust, and Go projects;
-- `localis ship [path]` — release gate combining audit, tests, types, lint, and build;
-- `localis apply <plan.json> [path]` — hash-checked diff preview and confirmed transaction;
-- `localis history` / `localis undo` — local backup history and conflict-safe restoration;
-- `--json` output for automation and future desktop integration;
-- a reusable `@localis/core` package;
-- the first Vercel-ready product website.
+<p align="center">
+  <img src="apps/web/public/screenshots/localis-cli.png" width="100%" alt="Localis CLI audit output" />
+</p>
 
-The Tauri desktop workspace is now available for local audit, privacy, and ship reports. Native packaging requires the Rust and platform prerequisites documented in `apps/desktop/README.md`.
+## Install
 
-## Quick start
+Localis requires Node.js 20.9 or newer.
 
-Requirements: Node.js 20.9 or newer.
+### npm
 
 ```bash
-npm install
-npm run build
-node apps/cli/dist/index.js doctor
-node apps/cli/dist/index.js audit .
-node apps/cli/dist/index.js privacy . --file src --file package.json
+npm install --global localis
+localis doctor
 ```
 
-For machine-readable output:
+### Bun
 
 ```bash
-node apps/cli/dist/index.js audit . --json
+bun add --global localis
+localis doctor
 ```
 
-Choose LM Studio instead of the default Ollama provider by starting its local
-server and passing `--provider lmstudio`. Both local providers are restricted
-to loopback endpoints.
+### Run once
 
 ```bash
-node apps/cli/dist/index.js models --provider lmstudio
-node apps/cli/dist/index.js ask "Review this module" . --provider lmstudio --file src
+npx localis audit .
 ```
 
-Ask an installed Ollama model about redacted project context:
+### curl · macOS and Linux
 
 ```bash
-node apps/cli/dist/index.js models
-node apps/cli/dist/index.js ask "Explain the authentication flow" . \
-  --file src --model qwen2.5-coder:7b
+curl -fsSL https://raw.githubusercontent.com/KebiLab/Localis/main/scripts/install.sh | sh
 ```
 
-Use `ask --dry-run` to inspect the manifest and payload hash without contacting
-any provider. Localis only permits Ollama and LM Studio endpoints on
-`localhost`, `127.0.0.1`, or `::1`.
+### PowerShell · Windows
 
-Connect any API that exposes the OpenAI-compatible `/models` and
-`/chat/completions` endpoints. Remote base URLs must use HTTPS, and the API key
-is read from an environment variable rather than a command-line argument:
+```powershell
+irm https://raw.githubusercontent.com/KebiLab/Localis/main/scripts/install.ps1 | iex
+```
+
+### Desktop application
+
+Download the Windows, macOS, or Linux installer from [GitHub Releases](https://github.com/KebiLab/Localis/releases). The first public builds are unsigned previews, so the operating system may show a warning.
+
+After the first Windows installer is accepted into the WinGet community repository, installation will be:
+
+```powershell
+winget install KebiLab.Localis
+```
+
+## First audit
+
+```bash
+cd your-repository
+localis audit .
+localis privacy . --file src --file package.json
+localis ship .
+```
+
+Machine-readable output is available for automation:
+
+```bash
+localis audit . --json
+localis ship . --json
+```
+
+## Add AI deliberately
+
+Ollama is the default local provider. LM Studio is restricted to loopback endpoints as well.
+
+```bash
+localis models
+localis ask "Explain the authentication flow" . --file src/auth
+```
+
+For an OpenAI-compatible API, keep the key in an environment variable:
 
 ```powershell
 $env:OPENAI_API_KEY = "your-key"
-node apps/cli/dist/index.js models --provider openai-compatible `
-  --endpoint https://api.openai.com/v1 --api-key-env OPENAI_API_KEY
-node apps/cli/dist/index.js ask "Review this project" . `
-  --provider openai-compatible --endpoint https://api.openai.com/v1 `
+localis models --provider openai-compatible `
+  --endpoint https://api.openai.com/v1 `
   --api-key-env OPENAI_API_KEY
 ```
 
-The desktop app provides the same flow under **Settings → Providers** with
-presets for OpenAI, OpenRouter, Ollama, LM Studio, and a custom compatible API.
-It loads the provider's model catalog automatically and keeps API keys only in
-memory for the current app session.
+Use `--dry-run` to inspect the exact manifest and payload hash without contacting a provider.
 
-Generate, preview, and apply a validated change plan:
+## Safety model
 
-```bash
-node apps/cli/dist/index.js propose "Add input validation" . \
-  --file src --model qwen2.5-coder:7b --out localis-plan.json
-node apps/cli/dist/index.js apply ./localis-plan.json .
-node apps/cli/dist/index.js apply ./localis-plan.json . --yes
-node apps/cli/dist/index.js history .
-node apps/cli/dist/index.js undo latest . --yes
-```
+- Deterministic audits do not need a model or network connection.
+- Remote provider URLs must use HTTPS; local providers must use loopback.
+- API keys are read from an environment variable or held in desktop memory for the current session.
+- AI output becomes a validated plan, never an implicit file write.
+- `apply` previews the diff, verifies original SHA-256 values, and requires confirmation.
+- Backups live under the ignored `.localis/` directory and `undo` refuses unsafe overwrites.
 
-Turn an individual finding into a reviewable plan:
+See [Privacy](docs/PRIVACY.md), [Change plans](docs/CHANGE_PLANS.md), and [Security policy](SECURITY.md).
 
-```bash
-node apps/cli/dist/index.js audit .
-node apps/cli/dist/index.js fix 1 . --out localis-fix.json
-node apps/cli/dist/index.js apply localis-fix.json . --yes
-```
-
-Run discovered tests or the complete release gate:
-
-```bash
-node apps/cli/dist/index.js test . --dry-run
-node apps/cli/dist/index.js test .
-node apps/cli/dist/index.js ship .
-```
-
-`propose` cannot change source files: it turns schema-constrained model output into a hash-checked plan. `apply` never writes without `--yes`. It checks every original SHA-256 before creating a private backup under `.localis/backups`. Undo refuses to overwrite files changed after Localis applied them. See [Change plans](docs/CHANGE_PLANS.md).
-
-## Workspace
+## Repository map
 
 ```text
 apps/
-  cli/       Localis command-line interface
-  desktop/   Tauri 2 + React native workspace
-  web/       Next.js product website for Vercel
+  cli/       published as `localis`
+  desktop/   Tauri 2 + React desktop application
+  web/       Next.js website and documentation
 packages/
-  core/      Scanner, audit rules, privacy boundary, environment checks
-docs/
-  ARCHITECTURE.md
+  core/      published as `localis-core`
+docs/        architecture, privacy, release, and change-plan details
+scripts/     curl, PowerShell, and WinGet release helpers
 ```
 
-## Roadmap
+## Development
 
-- [x] Local-first scanner and deterministic audit
-- [x] Environment doctor and JSON reports
-- [x] Privacy Gateway preview for outbound AI context
-- [x] Loopback-only Ollama model adapter
-- [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
-- [x] Local Ollama generation of schema-constrained change plans
-- [x] LM Studio model adapter
-- [x] OpenAI-compatible API adapter with automatic model discovery
-- [x] Desktop provider settings and project-aware AI workspace
-- [x] One-click plan generation from individual audit findings
-- [x] Tauri desktop workspace for Windows, macOS, and Linux
-- [x] Test intelligence and release readiness checks
+```bash
+npm install
+npm test
+npm run typecheck
+npm run build
+```
 
-Editor integrations are planned after the `0.2.0` CLI and desktop release; CI
-automation is available today through `localis ship --json` and the repository
-workflows.
+Start the website with `npm run dev:web`. Native desktop development additionally needs Rust and the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/), then runs with `npm run dev:desktop`.
 
-## Security
+## Release status
 
-Please do not publish vulnerabilities in a public issue. See [SECURITY.md](SECURITY.md) for the reporting process.
+Localis 0.2.0 is a public preview. The deterministic scanner, privacy gateway, provider discovery, change plans, apply/undo, test discovery, ship gate, desktop app, and CLI are implemented. Code signing, WinGet approval, and editor integrations follow the first public installer feedback.
 
-## License
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Security reports belong in the private process described in [SECURITY.md](SECURITY.md).
 
-Licensed under the [Apache License 2.0](LICENSE).
+## Credits
 
-Copyright © 2026 KebiLab.
+Made by **KebiLab**.
+
+Localis was inspired in part by the open-source work and ideas shared by [Andrew-py-dew](https://github.com/Andrew-py-dew). Localis is an independent implementation and does not include that repository's source code.
+
+Licensed under the [Apache License 2.0](LICENSE). Copyright © 2026 KebiLab.

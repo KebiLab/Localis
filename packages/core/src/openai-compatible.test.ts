@@ -11,6 +11,7 @@ test("compatible provider discovers models with bearer authentication", async ()
   let authorization = "";
   const models = await listOpenAICompatibleModels({
     endpoint: "https://models.example.com/v1",
+    // localis-ignore-next-line secret.generic-assignment -- synthetic test credential
     apiKey: "secret-key",
     fetchImplementation: async (input, init) => {
       authorization = new Headers(init?.headers).get("authorization") ?? "";
@@ -25,6 +26,7 @@ test("compatible provider discovers models with bearer authentication", async ()
 test("compatible provider uses the chat completions contract", async () => {
   const result = await generateWithOpenAICompatible({
     endpoint: "https://models.example.com/v1",
+    // localis-ignore-next-line secret.generic-assignment -- synthetic test credential
     apiKey: "secret-key",
     model: "coder-large",
     system: "Be precise.",

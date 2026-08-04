@@ -11,15 +11,15 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @localis/core && npm run build -w @localis/cli && npm run build -w @localis/web && npm run build -w @localis/desktop",
-    "build:core": "npm run build -w @localis/core",
-    "build:cli": "npm run build -w @localis/cli",
+    "build": "npm run build -w localis-core && npm run build -w localis && npm run build -w @localis/web && npm run build -w @localis/desktop",
+    "build:core": "npm run build -w localis-core",
+    "build:cli": "npm run build -w localis",
     "build:web": "npm run build -w @localis/web",
     "build:desktop": "npm run build -w @localis/desktop",
     "dev:web": "npm run dev -w @localis/web",
     "dev:desktop": "npm run tauri:dev -w @localis/desktop",
-    "test": "npm run test -w @localis/core && npm run test -w @localis/cli",
-    "typecheck": "npm run typecheck -w @localis/core && npm run build -w @localis/core && npm run typecheck -w @localis/cli && npm run typecheck -w @localis/web && npm run typecheck -w @localis/desktop",
+    "test": "npm run test -w localis-core && npm run test -w localis",
+    "typecheck": "npm run typecheck -w localis-core && npm run build -w localis-core && npm run typecheck -w localis && npm run typecheck -w @localis/web && npm run typecheck -w @localis/desktop",
     "localis": "node apps/cli/dist/index.js"
   },
   "engines": {
