@@ -2,6 +2,7 @@ const VALUE_OPTIONS = new Set([
   "--endpoint",
   "--check",
   "--file",
+  "--api-key-env",
   "--max-files",
   "--model",
   "--out",

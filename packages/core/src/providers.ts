@@ -9,14 +9,20 @@ import {
   type FetchImplementation,
   type OllamaGenerateResult,
 } from "./ollama.js";
+import {
+  generateWithOpenAICompatible,
+  listOpenAICompatibleModels,
+  type OpenAICompatibleGenerateResult,
+} from "./openai-compatible.js";
 
-export type LocalModelProvider = "ollama" | "lmstudio";
+export type LocalModelProvider = "ollama" | "lmstudio" | "openai-compatible";
 export type LocalModel = { name: string; size?: number; modifiedAt?: string; ownedBy?: string };
-export type LocalGenerateResult = OllamaGenerateResult | LMStudioGenerateResult;
+export type LocalGenerateResult = OllamaGenerateResult | LMStudioGenerateResult | OpenAICompatibleGenerateResult;
 
 export interface LocalProviderOptions {
   provider: LocalModelProvider;
   endpoint?: string;
+  apiKey?: string;
   timeoutMs?: number;
   fetchImplementation?: FetchImplementation;
 }
@@ -32,19 +38,20 @@ export interface LocalGenerateOptions extends LocalProviderOptions {
 export function parseLocalModelProvider(value: string | undefined): LocalModelProvider {
   if (!value || value === "ollama") return "ollama";
   if (value === "lmstudio") return "lmstudio";
-  throw new Error(`Unknown local model provider: ${value}. Use ollama or lmstudio.`);
+  if (value === "openai-compatible") return "openai-compatible";
+  throw new Error(`Unknown model provider: ${value}. Use ollama, lmstudio, or openai-compatible.`);
 }
 
 export async function listLocalModels(options: LocalProviderOptions): Promise<LocalModel[]> {
-  return options.provider === "lmstudio"
-    ? listLMStudioModels(options)
-    : listOllamaModels(options);
+  if (options.provider === "lmstudio") return listLMStudioModels(options);
+  if (options.provider === "openai-compatible") return listOpenAICompatibleModels(options);
+  return listOllamaModels(options);
 }
 
 export async function generateWithLocalModel(
   options: LocalGenerateOptions,
 ): Promise<LocalGenerateResult> {
-  return options.provider === "lmstudio"
-    ? generateWithLMStudio(options)
-    : generateWithOllama(options);
+  if (options.provider === "lmstudio") return generateWithLMStudio(options);
+  if (options.provider === "openai-compatible") return generateWithOpenAICompatible(options);
+  return generateWithOllama(options);
 }

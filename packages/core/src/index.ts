@@ -36,6 +36,15 @@ export {
   type PrepareContextOptions,
 } from "./context.js";
 export {
+  generateWithOpenAICompatible,
+  listOpenAICompatibleModels,
+  OpenAICompatibleError,
+  type OpenAICompatibleGenerateOptions,
+  type OpenAICompatibleGenerateResult,
+  type OpenAICompatibleModel,
+  type OpenAICompatibleOptions,
+} from "./openai-compatible.js";
+export {
   generateWithOllama,
   listOllamaModels,
   OllamaError,

@@ -51,6 +51,7 @@ export interface ProposeChangePlanOptions {
   include?: string[];
   maxFiles?: number;
   endpoint?: string;
+  apiKey?: string;
   provider?: LocalModelProvider;
   timeoutMs?: number;
   fetchImplementation?: FetchImplementation;
@@ -172,6 +173,7 @@ export async function proposeChangePlanWithLocalModel(
     provider: options.provider ?? "ollama",
     model: options.model,
     endpoint: options.endpoint,
+    apiKey: options.apiKey,
     timeoutMs: options.timeoutMs,
     fetchImplementation: options.fetchImplementation,
     temperature: 0,

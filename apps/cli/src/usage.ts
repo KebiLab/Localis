@@ -27,9 +27,10 @@ Options:
   --json           Print machine-readable JSON
   --file <path>    Include only this file or directory (repeatable)
   --model <name>   Select a model from the active provider
-  --provider <id>  Select ollama (default) or lmstudio
+  --provider <id>  Select ollama, lmstudio, or openai-compatible
   --check <id>     Run a discovered verification check (repeatable)
   --endpoint <url> Override the selected loopback provider endpoint
+  --api-key-env <name> Read a remote provider key from this environment variable
   --out <file>     Save a generated change plan without overwriting
   --max-files <n>  Limit context files (default: 24)
   --dry-run        Build context without calling Ollama

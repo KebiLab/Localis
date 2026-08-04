@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/audit.test.js dist/changes.test.js dist/context.test.js dist/diff.test.js dist/lmstudio.test.js dist/ollama.test.js dist/privacy.test.js dist/proposals.test.js dist/verification.test.js",
+    "test": "npm run build && node --test dist/audit.test.js dist/changes.test.js dist/context.test.js dist/diff.test.js dist/lmstudio.test.js dist/ollama.test.js dist/openai-compatible.test.js dist/privacy.test.js dist/proposals.test.js dist/verification.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {
