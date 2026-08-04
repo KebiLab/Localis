@@ -15,7 +15,7 @@ function CopyIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" /><path d="M16 8V5H5v11h3" /></svg>;
 }
 
-export function InstallTabs({ locale }: { locale: "en" | "ru" }) {
+export function InstallTabs({ locale, placement = "docs" }: { locale: "en" | "ru"; placement?: "docs" | "hero" }) {
   const [active, setActive] = useState<InstallMethod>("curl");
   const [copied, setCopied] = useState(false);
 
@@ -26,7 +26,7 @@ export function InstallTabs({ locale }: { locale: "en" | "ru" }) {
   }
 
   return (
-    <section className="installPanel" aria-label={locale === "ru" ? "Установка Localis" : "Install Localis"}>
+    <section className={`installPanel ${placement === "hero" ? "installPanelHero" : ""}`} aria-label={locale === "ru" ? "Установка Localis" : "Install Localis"}>
       <div className="installTabs" role="tablist">
         {(Object.keys(commands) as InstallMethod[]).map((method) => (
           <button key={method} type="button" role="tab" aria-selected={active === method} onClick={() => { setActive(method); setCopied(false); }}>{method}</button>

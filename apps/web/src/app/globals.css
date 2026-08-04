@@ -79,6 +79,11 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .asideRule { width: min(100%, 360px); height: 1px; margin: 28px 0 20px; background: var(--line-strong); }
 .posterAside ul { margin: 0; padding: 0; list-style: none; font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; line-height: 1.8; }
 
+.heroInstallSection { padding-block: 28px; background: #111113; }
+.heroInstallSection .installPanelHero { margin: 0; background: #19191b; }
+.installPanelHero .installTabs { padding-inline: 28px; }
+.installPanelHero .installCommand { min-height: 86px; }
+
 .actionRail { background: var(--ink); color: white; }
 .actionRailInner { min-height: 86px; display: grid; grid-template-columns: 1.55fr repeat(5, 1fr); align-items: center; }
 .actionRailInner > * { min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 11px; padding-inline: 18px; border-left: 1px solid rgba(255,255,255,.24); font-family: "Roboto Condensed Variable", sans-serif; font-size: 14px; font-weight: 550; white-space: nowrap; }
@@ -158,7 +163,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .docsContent dt { font-family: "Roboto Condensed Variable", sans-serif; font-size: 17px; font-weight: 700; }
 .docsContent dd { margin: 0; color: var(--ink-soft); line-height: 1.55; }
 
-.installPanel { margin: 0 0 88px; overflow: hidden; border: 1px solid #393a3f; background: #171719; color: #f0f0f2; }
+.installPanel { margin: 0; overflow: hidden; border: 1px solid #393a3f; background: #171719; color: #f0f0f2; }
+.docsContent > .installPanel { margin-bottom: 88px; }
 .installTabs { display: flex; gap: 36px; padding: 0 26px; border-bottom: 1px solid #393a3f; }
 .installTabs button { position: relative; min-height: 62px; padding: 0; border: 0; background: transparent; color: #8e8e94; font-family: "Roboto Condensed Variable", sans-serif; font-size: 18px; cursor: pointer; }
 .installTabs button[aria-selected="true"] { color: white; }
@@ -203,6 +209,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .posterAside { padding: 58px max(20px, calc((100vw - var(--shell)) / 2)); }
   .posterAside h1 { max-width: 440px; font-size: 31px; }
   .posterAside > p { max-width: 440px; }
+  .heroInstallSection { padding-block: 20px; }
+  .heroInstallSection .installPanelHero { margin-inline: 0; }
   .actionRailInner { grid-template-columns: repeat(2, 1fr); }
   .actionRailInner > * { min-height: 48px; padding-inline: 8px; font-size: 10px; }
   .actionRailInner > *:nth-child(odd) { border-left: 0; }

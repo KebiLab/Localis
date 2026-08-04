@@ -2,6 +2,7 @@ import Image from "next/image";
 import { siApple, siGithub, siLinux } from "simple-icons";
 
 import { Logo } from "@/components/logo";
+import { InstallTabs } from "@/components/install-tabs";
 import { SiteHeader } from "@/components/site-header";
 
 type Locale = "en" | "ru";
@@ -107,6 +108,12 @@ export function MarketingPage({ locale }: { locale: Locale }) {
           <div className="asideRule" />
           <ul>{t.heroFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
         </aside>
+      </section>
+
+      <section className="heroInstallSection" aria-label={locale === "ru" ? "Быстрая установка" : "Quick install"}>
+        <div className="shell">
+          <InstallTabs locale={locale} placement="hero" />
+        </div>
       </section>
 
       <section className="actionRail" aria-label="Download and platforms">
