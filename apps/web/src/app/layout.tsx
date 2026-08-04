@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "@fontsource-variable/jetbrains-mono";
-import "@fontsource-variable/league-gothic";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/roboto-condensed";
 import "@fontsource/anton";

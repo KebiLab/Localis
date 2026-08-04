@@ -61,17 +61,22 @@ a, button { -webkit-tap-highlight-color: transparent; }
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 38px 26px 26px 28px;
+  padding: 52px 26px 26px 28px;
   border-right: 1px solid var(--line);
   overflow: hidden;
-  font-family: "League Gothic Variable", "Arial Narrow", sans-serif;
-  font-size: clamp(190px, 20.3vw, 312px);
+  font-family: "Anton", "Arial Narrow", sans-serif;
+  font-size: clamp(230px, 25vw, 380px);
   font-weight: 400;
-  letter-spacing: .002em;
-  line-height: .84;
+  letter-spacing: 0;
+  line-height: .82;
   white-space: nowrap;
 }
-.posterTitle span { display: block; }
+.posterTitle span {
+  display: block;
+  width: 167%;
+  transform: scaleX(.6);
+  transform-origin: left center;
+}
 .posterAside { align-self: center; padding: 34px clamp(24px, 4vw, 70px); }
 .verifiedStamp {
   width: fit-content;
@@ -210,7 +215,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 1160px) {
   .posterHero { min-height: 520px; grid-template-columns: minmax(0,1.72fr) minmax(330px,.86fr); }
-  .posterTitle { font-size: clamp(172px, 20vw, 238px); }
+  .posterTitle { font-size: clamp(205px, 25vw, 300px); }
   .verifiedStamp { margin-bottom: 30px; font-size: 12px; }
   .actionRailInner { grid-template-columns: repeat(3,1fr); padding-block: 14px; }
   .actionRailInner > *:nth-child(4) { border-left: 0; }
@@ -233,7 +238,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .navLinks a:nth-child(-n+2) { display: none; }
   .navLinks { gap: 18px; font-size: 13px; }
   .posterHero { width: 100%; min-height: 0; grid-template-columns: 1fr; background-size: 72px 100%; }
-  .posterTitle { min-height: 360px; padding: 46px 18px 32px; border-right: 0; border-bottom: 1px solid var(--line); font-size: clamp(66px, 20.5vw, 114px); white-space: normal; }
+  .posterTitle { min-height: 360px; padding: 46px 18px 32px; border-right: 0; border-bottom: 1px solid var(--line); font-size: clamp(112px, 35vw, 190px); white-space: normal; }
   .posterAside { padding: 54px max(20px, calc((100vw - var(--shell)) / 2)); }
   .posterAside h1 { max-width: 400px; }
   .actionRailInner { grid-template-columns: repeat(2,1fr); }

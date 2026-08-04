@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "@fontsource-variable/league-gothic": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/roboto-condensed": "^5.3.0",
     "@fontsource/anton": "^5.3.0",
