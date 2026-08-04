@@ -60,6 +60,15 @@ For machine-readable output:
 node apps/cli/dist/index.js audit . --json
 ```
 
+Choose LM Studio instead of the default Ollama provider by starting its local
+server and passing `--provider lmstudio`. Both providers are restricted to
+loopback endpoints.
+
+```bash
+node apps/cli/dist/index.js models --provider lmstudio
+node apps/cli/dist/index.js ask "Review this module" . --provider lmstudio --file src
+```
+
 Ask an installed Ollama model about redacted project context:
 
 ```bash
@@ -104,7 +113,7 @@ docs/
 - [x] Loopback-only Ollama model adapter
 - [x] Hash-checked change plans, diff preview, transactional apply, and safe undo
 - [x] Local Ollama generation of schema-constrained change plans
-- [ ] LM Studio model adapter
+- [x] LM Studio model adapter
 - [ ] One-click plan generation from individual audit findings
 - [ ] Tauri desktop workspace for Windows, macOS, and Linux
 - [ ] Test intelligence and release readiness checks

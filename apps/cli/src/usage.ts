@@ -12,9 +12,9 @@ Commands:
   audit [path]     Scan a project with deterministic local rules
   doctor           Check Node.js, Git, and optional Ollama readiness
   privacy [path]   Preview the exact redacted project context
-  models           List locally installed Ollama models
-  ask <question>   Ask local Ollama about a redacted project context
-  propose <task>   Generate a validated change plan with local Ollama
+  models           List models from Ollama or LM Studio
+  ask <question>   Ask a local model about redacted project context
+  propose <task>   Generate a validated plan with a local model
   apply <plan>     Preview a change plan; add --yes to apply it
   history [path]   List local change and backup sessions
   undo [session]   Restore an applied session; requires --yes
@@ -23,7 +23,9 @@ Commands:
 Options:
   --json           Print machine-readable JSON
   --file <path>    Include only this file or directory (repeatable)
-  --model <name>   Select an installed Ollama model
+  --model <name>   Select a model from the active provider
+  --provider <id>  Select ollama (default) or lmstudio
+  --endpoint <url> Override the selected loopback provider endpoint
   --out <file>     Save a generated change plan without overwriting
   --max-files <n>  Limit context files (default: 24)
   --dry-run        Build context without calling Ollama

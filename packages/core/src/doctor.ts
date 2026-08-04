@@ -51,6 +51,28 @@ async function checkOllama(): Promise<DoctorCheck> {
   }
 }
 
+async function checkLMStudio(): Promise<DoctorCheck> {
+  try {
+    const response = await fetch("http://127.0.0.1:1234/v1/models", {
+      signal: AbortSignal.timeout(1_200),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return {
+      id: "lmstudio",
+      label: "LM Studio",
+      status: "ready",
+      detail: "Local model server is reachable.",
+    };
+  } catch {
+    return {
+      id: "lmstudio",
+      label: "LM Studio",
+      status: "optional",
+      detail: "Not running. Ollama or deterministic checks remain available.",
+    };
+  }
+}
+
 function checkNode(): DoctorCheck {
   const major = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10);
   return {
@@ -65,7 +87,12 @@ function checkNode(): DoctorCheck {
 }
 
 export async function runDoctor(): Promise<DoctorReport> {
-  const checks = await Promise.all([Promise.resolve(checkNode()), checkGit(), checkOllama()]);
+  const checks = await Promise.all([
+    Promise.resolve(checkNode()),
+    checkGit(),
+    checkOllama(),
+    checkLMStudio(),
+  ]);
   return {
     ready: checks.every((check) => check.status !== "error"),
     checks,

@@ -2,13 +2,15 @@ import {
   applyChangePlan,
   ChangePlanError,
   ChangeProposalError,
-  generateWithOllama,
+  generateWithLocalModel,
+  listLocalModels,
   listChangeSessions,
-  listOllamaModels,
+  LMStudioError,
   OllamaError,
+  parseLocalModelProvider,
   prepareProjectContext,
   previewChangePlan,
-  proposeChangePlanWithOllama,
+  proposeChangePlanWithLocalModel,
   runAudit,
   runDoctor,
   undoChangeSession,
@@ -110,12 +112,14 @@ export async function runCli(args: string[]): Promise<CliResult> {
 
   if (command === "models") {
     try {
-      const models = await listOllamaModels({
-        endpoint: optionValue(parsed, "--endpoint") ?? process.env.LOCALIS_OLLAMA_ENDPOINT,
+      const provider = selectedProvider(parsed);
+      const models = await listLocalModels({
+        provider,
+        endpoint: selectedEndpoint(parsed, provider),
       });
       return {
         exitCode: 0,
-        stdout: json ? JSON.stringify({ models }, null, 2) : formatModels(models),
+        stdout: json ? JSON.stringify({ provider, models }, null, 2) : formatModels(models, provider),
       };
     } catch (error) {
       return commandError("OLLAMA_FAILED", error, json);
@@ -148,21 +152,19 @@ export async function runCli(args: string[]): Promise<CliResult> {
         };
       }
 
-      const endpoint =
-        optionValue(parsed, "--endpoint") ?? process.env.LOCALIS_OLLAMA_ENDPOINT;
-      let model = optionValue(parsed, "--model") ?? process.env.LOCALIS_OLLAMA_MODEL;
+      const provider = selectedProvider(parsed);
+      const endpoint = selectedEndpoint(parsed, provider);
+      let model = optionValue(parsed, "--model") ?? selectedModel(provider);
       if (!model) {
-        const models = await listOllamaModels({ endpoint });
+        const models = await listLocalModels({ provider, endpoint });
         model = models[0]?.name;
       }
       if (!model) {
-        throw new OllamaError(
-          "No Ollama model is installed. Run: ollama pull qwen2.5-coder:7b",
-          "INVALID_RESPONSE",
-        );
+        throw new Error(`No model is loaded in ${provider === "ollama" ? "Ollama" : "LM Studio"}.`);
       }
 
-      const result = await generateWithOllama({
+      const result = await generateWithLocalModel({
+        provider,
         model,
         endpoint,
         system: [
@@ -208,24 +210,22 @@ export async function runCli(args: string[]): Promise<CliResult> {
         };
       }
 
-      const endpoint =
-        optionValue(parsed, "--endpoint") ?? process.env.LOCALIS_OLLAMA_ENDPOINT;
-      let model = optionValue(parsed, "--model") ?? process.env.LOCALIS_OLLAMA_MODEL;
+      const provider = selectedProvider(parsed);
+      const endpoint = selectedEndpoint(parsed, provider);
+      let model = optionValue(parsed, "--model") ?? selectedModel(provider);
       if (!model) {
-        const models = await listOllamaModels({ endpoint });
+        const models = await listLocalModels({ provider, endpoint });
         model = models[0]?.name;
       }
       if (!model) {
-        throw new OllamaError(
-          "No Ollama model is installed. Run: ollama pull qwen2.5-coder:7b",
-          "INVALID_RESPONSE",
-        );
+        throw new Error(`No model is loaded in ${provider === "ollama" ? "Ollama" : "LM Studio"}.`);
       }
 
-      const proposal = await proposeChangePlanWithOllama({
+      const proposal = await proposeChangePlanWithLocalModel({
         root,
         instruction,
         model,
+        provider,
         endpoint,
         include,
         maxFiles,
@@ -355,7 +355,7 @@ function parseMaxFiles(raw: string | undefined): number | undefined {
 function commandError(code: string, error: unknown, json: boolean): CliResult {
   const message = error instanceof Error ? error.message : String(error);
   const detail =
-    error instanceof OllamaError
+    error instanceof OllamaError || error instanceof LMStudioError
       ? { providerCode: error.code }
       : error instanceof ChangeProposalError
         ? { proposalCode: error.code }
@@ -368,6 +368,25 @@ function commandError(code: string, error: unknown, json: boolean): CliResult {
       ? JSON.stringify({ error: code, message, ...detail })
       : `Localis ${code.toLowerCase().replaceAll("_", " ")}: ${terminalSafe(message)}`,
   };
+}
+
+function selectedProvider(parsed: ParsedArguments) {
+  return parseLocalModelProvider(
+    optionValue(parsed, "--provider") ?? process.env.LOCALIS_PROVIDER,
+  );
+}
+
+function selectedEndpoint(parsed: ParsedArguments, provider: "ollama" | "lmstudio") {
+  return optionValue(parsed, "--endpoint") ??
+    (provider === "ollama"
+      ? process.env.LOCALIS_OLLAMA_ENDPOINT
+      : process.env.LOCALIS_LMSTUDIO_ENDPOINT);
+}
+
+function selectedModel(provider: "ollama" | "lmstudio") {
+  return provider === "ollama"
+    ? process.env.LOCALIS_OLLAMA_MODEL
+    : process.env.LOCALIS_LMSTUDIO_MODEL;
 }
 
 async function writeNewPlanFile(planPath: string, plan: unknown): Promise<void> {

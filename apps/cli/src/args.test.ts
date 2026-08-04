@@ -15,6 +15,8 @@ test("argument parser preserves repeated context files", () => {
     "12",
     "--out",
     "plan.json",
+    "--provider",
+    "lmstudio",
     "--json",
   ]);
 
@@ -22,6 +24,7 @@ test("argument parser preserves repeated context files", () => {
   assert.deepEqual(optionValues(parsed, "--file"), ["src", "package.json"]);
   assert.equal(optionValue(parsed, "--max-files"), "12");
   assert.equal(optionValue(parsed, "--out"), "plan.json");
+  assert.equal(optionValue(parsed, "--provider"), "lmstudio");
   assert.equal(parsed.flags.has("--json"), true);
 });
 

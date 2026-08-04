@@ -56,7 +56,7 @@ export interface AuditReport {
 }
 
 export interface DoctorCheck {
-  id: "node" | "git" | "ollama";
+  id: "node" | "git" | "ollama" | "lmstudio";
   label: string;
   status: "ready" | "optional" | "error";
   detail: string;

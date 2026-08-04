@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added a loopback-only LM Studio adapter and a unified local model provider layer.
+- Added `--provider ollama|lmstudio` to `models`, `ask`, and `propose`.
+
 All notable changes to Localis will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning.

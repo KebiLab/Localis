@@ -9,11 +9,12 @@ import {
   prepareProjectContext,
   type ContextPreview,
 } from "./context.js";
+import type { FetchImplementation } from "./ollama.js";
 import {
-  generateWithOllama,
-  type FetchImplementation,
-  type OllamaGenerateResult,
-} from "./ollama.js";
+  generateWithLocalModel,
+  type LocalGenerateResult,
+  type LocalModelProvider,
+} from "./providers.js";
 
 const MAX_INSTRUCTION_LENGTH = 4_000;
 const MAX_RESPONSE_BYTES = 12 * 1024 * 1024;
@@ -49,6 +50,7 @@ export interface ProposeChangePlanOptions {
   include?: string[];
   maxFiles?: number;
   endpoint?: string;
+  provider?: LocalModelProvider;
   timeoutMs?: number;
   fetchImplementation?: FetchImplementation;
 }
@@ -58,7 +60,7 @@ export interface ProposedChangePlan {
   preview: ChangePreview;
   context: ContextPreview;
   generation: Pick<
-    OllamaGenerateResult,
+    LocalGenerateResult,
     "model" | "promptTokens" | "responseTokens" | "durationMs"
   >;
 }
@@ -150,7 +152,7 @@ function parseProposalResponse(response: string): Array<{
   });
 }
 
-export async function proposeChangePlanWithOllama(
+export async function proposeChangePlanWithLocalModel(
   options: ProposeChangePlanOptions,
 ): Promise<ProposedChangePlan> {
   const instruction = validateInstruction(options.instruction);
@@ -160,7 +162,8 @@ export async function proposeChangePlanWithOllama(
     maxFiles: options.maxFiles,
   });
   const schema = JSON.stringify(CHANGE_PROPOSAL_SCHEMA);
-  const result = await generateWithOllama({
+  const result = await generateWithLocalModel({
+    provider: options.provider ?? "ollama",
     model: options.model,
     endpoint: options.endpoint,
     timeoutMs: options.timeoutMs,
@@ -210,3 +213,5 @@ export async function proposeChangePlanWithOllama(
     },
   };
 }
+
+export const proposeChangePlanWithOllama = proposeChangePlanWithLocalModel;

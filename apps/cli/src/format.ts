@@ -7,7 +7,8 @@ import type {
   DoctorReport,
   FindingSeverity,
   OllamaGenerateResult,
-  OllamaModel,
+  LocalModel,
+  LocalModelProvider,
 } from "@localis/core";
 
 const ANSI = {
@@ -182,7 +183,7 @@ export function formatPrivacyPreview(preview: ContextPreview): string {
   return output.join("\n");
 }
 
-export function formatModels(models: OllamaModel[]): string {
+export function formatModels(models: LocalModel[], provider: LocalModelProvider = "ollama"): string {
   const output = [
     "",
     `${paint("LOCALIS", "violet")}  ${paint("LOCAL MODELS", "dim")}`,
@@ -190,7 +191,9 @@ export function formatModels(models: OllamaModel[]): string {
   ];
 
   if (models.length === 0) {
-    output.push("No Ollama models are installed. Pull one with: ollama pull qwen2.5-coder:7b");
+    output.push(provider === "ollama"
+      ? "No Ollama models are installed. Pull one with: ollama pull qwen2.5-coder:7b"
+      : "No LM Studio models are loaded. Load a model and start the local server.");
   } else {
     for (const model of models) {
       output.push(

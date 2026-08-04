@@ -1,6 +1,14 @@
 export { runAudit } from "./audit.js";
 export { runDoctor } from "./doctor.js";
 export {
+  generateWithLMStudio,
+  listLMStudioModels,
+  LMStudioError,
+  type LMStudioGenerateOptions,
+  type LMStudioGenerateResult,
+  type LMStudioModel,
+} from "./lmstudio.js";
+export {
   applyChangePlan,
   ChangePlanError,
   createChangePlan,
@@ -37,8 +45,19 @@ export {
   type OllamaModel,
 } from "./ollama.js";
 export {
+  generateWithLocalModel,
+  listLocalModels,
+  parseLocalModelProvider,
+  type LocalGenerateOptions,
+  type LocalGenerateResult,
+  type LocalModel,
+  type LocalModelProvider,
+  type LocalProviderOptions,
+} from "./providers.js";
+export {
   CHANGE_PROPOSAL_SCHEMA,
   ChangeProposalError,
+  proposeChangePlanWithLocalModel,
   proposeChangePlanWithOllama,
   type ProposeChangePlanOptions,
   type ProposedChangePlan,
